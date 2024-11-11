@@ -28,8 +28,7 @@ export const ParticipateEvent = async ({
     }
 
     const currentParticipants =
-      embed.fields.find((field) => field.name === "Participantes")?.value ||
-      "Nenhum";
+      embed.fields.find((field) => field.name === "Participantes")?.value || "";
 
     if (!currentParticipants.includes(user.id)) {
       //adiciona o usuário no array que controla entrada e saída, apenas se o participante não estiver ainda adicionado no array
