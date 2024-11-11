@@ -8,6 +8,7 @@ import {
   PartialUser,
   User,
   SlashCommandBuilder,
+  EmbedBuilder,
 } from "discord.js";
 import { OpenEvent } from "./commands/OpenEvent";
 import { ParticipateEvent } from "./actions/ParticipateEvent";
@@ -15,7 +16,7 @@ import { ParticipantTimesType } from "./types";
 import { StartEvent } from "./actions/StartEvent";
 
 //fazer:
-//adicionar projeto no github
+//keytitle pode dar ruim quando o usuário entra no meio do evento
 //quando o usuário está na sala e a sala é excluida da erro
 //logica de começar o evento
 //atualizar o join time de todos os usuários para Date now, que é quando começa o evento
@@ -54,7 +55,6 @@ client.once("ready", async () => {
 
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
-
   const { commandName } = interaction;
 
   if (commandName === "openevent") {
@@ -128,17 +128,69 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   if (oldState.member?.user.bot) {
     return;
   }
+  const channel = await oldState?.channel?.fetch();
+  const findMessages = await channel?.messages.fetch();
+  const messageContent = findMessages?.map((message) => {
+    return message;
+  })?.[0];
+  const embed = messageContent?.embeds[0];
 
-  const messages = await oldState.channel?.fetch();
-  const embed = await messages?.messages.fetch();
-
-  //logica para verificar se o usuario saiu da sala
-  //quando o usuario sair da sala o oldState.channelId ira existir e será diferente do newState.channelId
+  //logica para verificar se o usuario saiu da salas
+  //quando o usuario sair da sala o oldState.channelId ira existir e será diferente do newState.channelIds
   if (oldState.channelId && oldState.channelId !== newState.channelId) {
-    console.log(eventStore, embed?.size);
+    if (embed) {
+      const userId = oldState?.member?.user.id;
+      const userTag = `<@${userId}>`;
+      const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
+      const eventNumber = eventNumberMatch?.[1] || "";
+      const keyTitle = `Evento ${eventNumber}`;
+
+      //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
+      if (userId) {
+        const joinTime = eventStore[keyTitle][userId].joinTime;
+        const totalTime = eventStore[keyTitle][userId].totalTime || 0;
+        const counter = joinTime ? Date.now() - joinTime : 0;
+        eventStore[keyTitle][userId] = {
+          joinTime: null,
+          totalTime: totalTime + counter,
+        };
+        console.log(eventStore);
+      } else {
+        console.error("User id não existe");
+      }
+
+      const participants =
+        embed.fields.find((text) => text.name === "Participantes")?.value || "";
+
+      const updateParticipants = participants
+        .split("\n")
+        .filter((line) => line.trim() !== userTag)
+        .join("\n");
+
+      const updatedEmbed = new EmbedBuilder();
+      updatedEmbed.setTitle(embed.title);
+      updatedEmbed.addFields(
+        embed.fields.map((field) => {
+          if (field.name === "Participantes") {
+            return {
+              ...field,
+              value:
+                updateParticipants.length > 0
+                  ? updateParticipants
+                  : "Nenhum participante",
+            };
+          }
+
+          return field;
+        })
+      );
+      updatedEmbed.setDescription(embed.description);
+      updatedEmbed.setColor(embed.color);
+
+      await messageContent.edit({ embeds: [updatedEmbed] });
+    }
     // para tirar o usuário do evento, preciso zerar o join time dele null
     // preciso atualizar o total time dele
-    // preciso atualizar o embed para retirar o nome do participante
   }
 });
 
