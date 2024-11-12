@@ -16,7 +16,6 @@ import { ParticipantTimesType } from "./types";
 import { StartEvent } from "./actions/StartEvent";
 
 //fazer:
-//keytitle pode dar ruim quando o usuário entra no meio do evento
 //quando o usuário está na sala e a sala é excluida da erro
 //logica de começar o evento
 //atualizar o join time de todos os usuários para Date now, que é quando começa o evento
