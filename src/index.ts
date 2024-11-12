@@ -96,7 +96,7 @@ client.on(
         eventStore,
       });
 
-      console.log(eventStore);
+      console.log("quando participa", eventStore);
     }
 
     //função para começar o evento
@@ -146,51 +146,69 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       const keyTitle = `Evento ${eventNumber}`;
 
       //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
-      if (userId) {
-        const joinTime = eventStore[keyTitle][userId].joinTime;
-        const totalTime = eventStore[keyTitle][userId].totalTime || 0;
-        const counter = joinTime ? Date.now() - joinTime : 0;
-        eventStore[keyTitle][userId] = {
-          joinTime: null,
-          totalTime: totalTime + counter,
-        };
-        console.log(eventStore);
+      if (userId && eventStore[keyTitle] && eventStore[keyTitle][userId]) {
+        //remover da lista de participantes no embed
+        try {
+          const participants =
+            embed.fields.find((text) => text.name === "Participantes")?.value ||
+            "";
+
+          const updateParticipants = participants
+            .split("\n")
+            .filter((line) => line.trim() !== userTag)
+            .join("\n");
+
+          const updatedEmbed = new EmbedBuilder();
+          updatedEmbed.setTitle(embed.title);
+          updatedEmbed.addFields(
+            embed.fields.map((field) => {
+              if (field.name === "Participantes") {
+                return {
+                  ...field,
+                  value:
+                    updateParticipants.length > 0
+                      ? updateParticipants
+                      : "Nenhum participante",
+                };
+              }
+
+              return field;
+            })
+          );
+          updatedEmbed.setDescription(embed.description);
+          updatedEmbed.setColor(embed.color);
+
+          await messageContent.edit({ embeds: [updatedEmbed] });
+        } catch (error) {
+          console.error(
+            `Error ao atualizar a lista de participantes do ${keyTitle}`
+          );
+        }
+
+        //remover do array
+        try {
+          const joinTime = eventStore[keyTitle][userId].joinTime;
+          const totalTime = eventStore[keyTitle][userId].totalTime || 0;
+          const counter = joinTime ? Date.now() - joinTime : 0;
+          eventStore[keyTitle][userId] = {
+            joinTime: null,
+            totalTime: totalTime + counter,
+          };
+          console.log("tempo atualizado no eventStore:", eventStore);
+        } catch (error) {
+          console.error(
+            `Erro ao atualizar o tempo do usuário ${userTag}`,
+            error
+          );
+        }
       } else {
-        console.error("User id não existe");
+        console.error(
+          `Usuário ${userTag} não encontrado no eventStore para o ${keyTitle}`
+        );
       }
 
-      const participants =
-        embed.fields.find((text) => text.name === "Participantes")?.value || "";
-
-      const updateParticipants = participants
-        .split("\n")
-        .filter((line) => line.trim() !== userTag)
-        .join("\n");
-
-      const updatedEmbed = new EmbedBuilder();
-      updatedEmbed.setTitle(embed.title);
-      updatedEmbed.addFields(
-        embed.fields.map((field) => {
-          if (field.name === "Participantes") {
-            return {
-              ...field,
-              value:
-                updateParticipants.length > 0
-                  ? updateParticipants
-                  : "Nenhum participante",
-            };
-          }
-
-          return field;
-        })
-      );
-      updatedEmbed.setDescription(embed.description);
-      updatedEmbed.setColor(embed.color);
-
-      await messageContent.edit({ embeds: [updatedEmbed] });
+      console.log("quando sai da sala", eventStore);
     }
-    // para tirar o usuário do evento, preciso zerar o join time dele null
-    // preciso atualizar o total time dele
   }
 });
 
