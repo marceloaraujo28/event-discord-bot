@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { ParticipateEventType } from "./types";
+import { PrismaClient } from "@prisma/client";
 
 export const ParticipateEvent = async ({
   reaction,
@@ -17,61 +18,95 @@ export const ParticipateEvent = async ({
   const eventNumber = eventNumberMatch?.[1] || "";
   const keyTitle = `Evento ${eventNumber}`;
 
+  const prisma = new PrismaClient();
+
+  await reaction.users.remove(user.id);
+  //verifica se o usuário está em algum canal de voz
+  if (!member?.voice.channel) {
+    return console.error("O usuário não está conectado a nenhum canal de voz.");
+  }
+
   if (embed) {
-    await reaction.users.remove(user.id);
-
-    //verifica se o usuário está em algum canal de voz
-    if (!member?.voice.channel) {
-      return console.error(
-        "O usuário não está conectado a nenhum canal de voz."
-      );
-    }
-
     const currentParticipants =
-      embed.fields.find((field) => field.name === "Participantes")?.value || "";
+      embed.fields.find((field) => field.name === "Participantes")?.value ||
+      "Nenhum participante";
 
     if (!currentParticipants.includes(user.id)) {
-      //adiciona o usuário no array que controla entrada e saída, apenas se o participante não estiver ainda adicionado no array
-      if (!eventStore[keyTitle][user.id]) {
-        eventStore[keyTitle][user.id] = {
-          totalTime: 0,
-          joinTime:
-            embed.description === "Evento não iniciado" ? null : Date.now(),
-        };
-      } else {
-        eventStore[keyTitle][user.id].joinTime =
-          embed.description === "Evento não iniciado" ? null : Date.now();
-      }
+      try {
+        const event = await prisma.event.findFirst({
+          where: {
+            eventName: keyTitle,
+          },
+        });
 
-      //se não tiver nenhum participante ele apenas adiciona no campo, se não, ele pega todos os outros e adiciona mais esse
-      const updateParticipants =
-        currentParticipants === "Nenhum participante"
-          ? userMention
-          : `${currentParticipants}\n${userMention}`;
+        //status do evento
+        const status = event?.status;
 
-      const updatedEmbed = new EmbedBuilder()
-        .setTitle(embed.title)
-        .addFields(
-          embed.fields.map((field) => {
-            if (field.name === "Participantes") {
-              return {
-                ...field,
-                value: updateParticipants,
-              };
-            }
+        if (!event) {
+          console.error(`Evento com o número ${eventNumber} não encontrado`);
+          return;
+        }
 
-            return field;
-          })
-        )
-        .setDescription(embed.description)
-        .setColor(embed.color);
+        const participant = await prisma.participant.upsert({
+          where: {
+            userId_eventId: {
+              eventId: event.id,
+              userId: user.id,
+            },
+          },
+          update: {
+            joinTime: status === "pending" ? null : Date.now(),
+          },
+          create: {
+            userId: user.id,
+            eventId: event.id,
+            joinTime: status === "pending" ? null : Date.now(),
+            totalTime: 0,
+          },
+        });
 
-      await message.edit({ embeds: [updatedEmbed] });
+        console.log(
+          participant.id
+            ? `Participante entrou novamente no evento`
+            : `Novo participante adicionado ao evento`,
+          participant
+        );
 
-      //puxar o usuário para a sala do evento caso ele não esteja na sala ainda
-      //isso evita de o usuário estar participando do evento a partir de outra sala
-      if (eventVoiceChannel && eventVoiceChannel.isVoiceBased()) {
-        await member?.voice.setChannel(eventVoiceChannel);
+        //se não tiver nenhum participante ele apenas adiciona no campo, se não, ele pega todos os outros e adiciona mais esse
+        const updateParticipants =
+          currentParticipants === "Nenhum participante"
+            ? userMention
+            : `${currentParticipants}\n${userMention}`;
+
+        const updatedEmbed = new EmbedBuilder()
+          .setTitle(embed.title)
+          .addFields(
+            embed.fields.map((field) => {
+              if (field.name === "Participantes") {
+                return {
+                  ...field,
+                  value: updateParticipants,
+                };
+              }
+
+              return field;
+            })
+          )
+          .setDescription(embed.description)
+          .setColor(embed.color);
+
+        await message.edit({ embeds: [updatedEmbed] });
+
+        //puxar o usuário para a sala do evento caso ele não esteja na sala ainda
+        //isso evita de o usuário estar participando do evento a partir de outra sala
+        if (eventVoiceChannel && eventVoiceChannel.isVoiceBased()) {
+          await member?.voice.setChannel(eventVoiceChannel);
+        }
+      } catch (error) {
+        console.error(`Erro ao adicionar o participante no evento`, error);
+        reaction.message.reply(
+          `Erro ao adicionar o participante ${userMention} ao evento`
+        );
       }
     }
   }
