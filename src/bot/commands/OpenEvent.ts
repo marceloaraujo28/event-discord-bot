@@ -1,34 +1,54 @@
 import { EmbedBuilder, ChannelType } from "discord.js";
 import { OpenEventType } from "./types";
+import { PrismaClient } from "@prisma/client";
 
 export const OpenEvent = async ({
   eventCounter,
   interaction,
   eventStore,
 }: OpenEventType) => {
-  const channelName = `event-${eventCounter}`;
   const guild = interaction.guild;
 
+  const prisma = new PrismaClient();
+
   try {
+    //consultando ultimo evento para criar o numero do evento
+    const lastEvent = await prisma.event.findFirst({
+      orderBy: { id: "desc" },
+    });
+
+    const nextEventNumber = (lastEvent?.id ?? 0) + 1;
+
+    //criando evento no banco de dados
+    const newEvent = await prisma.event.create({
+      data: {
+        creatorId: interaction.user.id,
+        eventName: `Evento ${nextEventNumber}`,
+        createdAt: new Date(),
+      },
+    });
+
+    console.log("Evento criado: ", newEvent);
+
     //Criação do canal
 
     const eventChannel = await guild?.channels.create({
-      name: channelName,
+      name: `event-${nextEventNumber}`,
       type: ChannelType.GuildVoice,
-      reason: `Canal criado para o Evento ${eventCounter}`,
+      reason: `Canal criado para o Evento ${nextEventNumber}`,
     });
 
     // Criação do embed
 
     const embed = await new EmbedBuilder();
     embed.setTitle(
-      `Evento ${eventCounter} - Criado por ${interaction.user.username}`
+      `Evento ${nextEventNumber} - Criado por ${interaction.user.username}`
     );
     embed.setDescription("Evento não iniciado");
     embed.addFields(
       {
         name: "ID do Evento",
-        value: `${eventCounter}`,
+        value: `${nextEventNumber}`,
         inline: true,
       },
       {
@@ -53,14 +73,6 @@ export const OpenEvent = async ({
     );
     embed.setColor("Blurple");
 
-    const keyTitle = `Evento ${eventCounter}`;
-
-    // Iniciando o array vazio (esse array faz o controle da entrada e saída dos usuários)
-
-    if (!eventStore[keyTitle]) {
-      eventStore[keyTitle] = {};
-    }
-
     // Enviando embed para o canal criado
 
     const eventMessage = await eventChannel?.send({ embeds: [embed] });
@@ -71,7 +83,7 @@ export const OpenEvent = async ({
     await eventMessage?.react("🛑"); // Reação para para o evento
 
     interaction.reply(
-      `Evento ${eventCounter} Criado com sucesso pelo jogador <@${interaction.user.id}>`
+      `Evento ${nextEventNumber} Criado com sucesso pelo jogador <@${interaction.user.id}>`
     );
   } catch (error) {
     console.error(`Erro ao criar o canal:`, error);
