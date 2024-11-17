@@ -17,19 +17,19 @@ model Event {
   id          Int           @id @default(autoincrement())
   eventName   String
   creatorId   String
-  startTime   Int?
-  endTime     Int?
+  startTime   BigInt?
+  endTime     BigInt?
   status      String        @default("pending")
   createdAt   DateTime      @default(now())
   Participant Participant[]
 }
 
 model Participant {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   userId    String
   eventId   Int
-  joinTime  Int?
-  totalTime Int?
+  joinTime  BigInt?
+  totalTime BigInt?
 
   event Event @relation(fields: [eventId], references: [id])
 
