@@ -15,6 +15,8 @@ import { ParticipateEvent } from "./actions/ParticipateEvent";
 import { ParticipantTimesType } from "./types";
 import { StartEvent } from "./actions/StartEvent";
 
+import { PrismaClient } from "@prisma/client";
+
 //fazer:
 //quando o usuário está na sala e a sala é excluida da erro
 //logica de começar o evento
@@ -33,6 +35,8 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
   ],
 });
+
+const prisma = new PrismaClient();
 
 let eventCounter = 0;
 const eventStore: Record<string, Record<string, ParticipantTimesType>> = {};
@@ -59,9 +63,7 @@ client.on("interactionCreate", async (interaction) => {
   if (commandName === "openevent") {
     eventCounter++;
     await OpenEvent({
-      eventCounter,
       interaction,
-      eventStore,
     });
   }
 });
@@ -144,13 +146,25 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
       const eventNumber = eventNumberMatch?.[1] || "";
       const keyTitle = `Evento ${eventNumber}`;
 
+      const event = await prisma.event.findFirst({
+        where: {
+          eventName: keyTitle,
+        },
+      });
+
+      const participant = await prisma.participant.findFirst({
+        where: {
+          userId,
+        },
+      });
+
       //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
-      if (userId && eventStore[keyTitle] && eventStore[keyTitle][userId]) {
+      if (userId && event && participant) {
         //remover da lista de participantes no embed
         try {
           const participants =
             embed.fields.find((text) => text.name === "Participantes")?.value ||
-            "";
+            "Nenhum participant";
 
           const updateParticipants = participants
             .split("\n")
@@ -186,27 +200,31 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
         //remover do array
         try {
-          const joinTime = eventStore[keyTitle][userId].joinTime;
-          const totalTime = eventStore[keyTitle][userId].totalTime || 0;
+          const joinTime = Number(participant.joinTime);
+          const totalTime = Number(participant.totalTime);
           const counter = joinTime ? Date.now() - joinTime : 0;
-          eventStore[keyTitle][userId] = {
-            joinTime: null,
-            totalTime: totalTime + counter,
-          };
-          console.log("tempo atualizado no eventStore:", eventStore);
+          const updateParticipant = await prisma.participant.update({
+            data: {
+              joinTime: null,
+              totalTime: totalTime + counter,
+            },
+            where: {
+              userId_eventId: {
+                eventId: event.id,
+                userId,
+              },
+            },
+          });
+          console.log("Usuário saiu da sala e do evento: ", updateParticipant);
         } catch (error) {
           console.error(
-            `Erro ao atualizar o tempo do usuário ${userTag}`,
+            `Erro ao atualizar o tempo do usuário no banco de dados ${userTag}`,
             error
           );
         }
       } else {
-        console.error(
-          `Usuário ${userTag} não encontrado no eventStore para o ${keyTitle}`
-        );
+        console.error(`Usuário ${userTag} não encontrado para o ${keyTitle}`);
       }
-
-      console.log("quando sai da sala", eventStore);
     }
   }
 });
