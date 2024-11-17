@@ -2,13 +2,8 @@ import { EmbedBuilder, ChannelType } from "discord.js";
 import { OpenEventType } from "./types";
 import { PrismaClient } from "@prisma/client";
 
-export const OpenEvent = async ({
-  eventCounter,
-  interaction,
-  eventStore,
-}: OpenEventType) => {
+export const OpenEvent = async ({ interaction }: OpenEventType) => {
   const guild = interaction.guild;
-
   const prisma = new PrismaClient();
 
   try {
