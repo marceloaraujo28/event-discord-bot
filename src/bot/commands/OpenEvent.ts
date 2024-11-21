@@ -7,6 +7,8 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
   const prisma = new PrismaClient();
 
   try {
+    await interaction.deferReply();
+
     //consultando ultimo evento para criar o numero do evento
     const lastEvent = await prisma.event.findFirst({
       orderBy: { id: "desc" },
@@ -53,7 +55,7 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
       },
       {
         name: "Qnt Participantes",
-        value: "1",
+        value: "0",
         inline: true,
       },
       {
@@ -77,11 +79,11 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
     await eventMessage?.react("🏌️‍♀️"); // Reação para começar o evento
     await eventMessage?.react("🛑"); // Reação para para o evento
 
-    interaction.reply(
-      `Evento ${nextEventNumber} Criado com sucesso pelo jogador <@${interaction.user.id}>`
+    await interaction.editReply(
+      `Evento ${nextEventNumber} criado com sucesso pelo jogador <@${interaction.user.id}>`
     );
   } catch (error) {
     console.error(`Erro ao criar o canal:`, error);
-    interaction.reply(`Falha ao criar evento`);
+    interaction.editReply(`Falha ao criar evento`);
   }
 };
