@@ -16,8 +16,13 @@ import { ParticipantTimesType } from "./types";
 import { StartEvent } from "./actions/StartEvent";
 
 import { PrismaClient } from "@prisma/client";
+import { VoiceUpdate } from "./actions/VoiceUpdate";
+import { FinishedEvent } from "./actions/FinishedEvent";
 
 //fazer:
+//criar sala participar evento, quando o usuario iniciar o evento
+//mudar sala para texto
+//para inciar, finalizar deixar só as pessoas como adiministrador
 //quando o usuário está na sala e a sala é excluida da erro
 //logica de começar o evento
 //atualizar o join time de todos os usuários para Date now, que é quando começa o evento
@@ -37,9 +42,6 @@ const client = new Client({
 });
 
 const prisma = new PrismaClient();
-
-let eventCounter = 0;
-const eventStore: Record<string, Record<string, ParticipantTimesType>> = {};
 
 client.once("ready", async () => {
   console.log("Bot online");
@@ -61,7 +63,6 @@ client.on("interactionCreate", async (interaction) => {
   const { commandName } = interaction;
 
   if (commandName === "openevent") {
-    eventCounter++;
     await OpenEvent({
       interaction,
     });
@@ -82,22 +83,26 @@ client.on(
       }
     }
 
-    //está redundante, dentro de ParticipateEvent tem as mesmas variaveis
     const message = reaction.message;
     const embed = message.embeds[0];
     const creatorNameMatch = embed.title?.match(/Criado por (.+)$/);
     const creatorName = creatorNameMatch ? creatorNameMatch[1] : null;
+
+    const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
+    const eventNumber = eventNumberMatch?.[1] || "";
+    const keyTitle = `Evento ${eventNumber}`;
 
     //função para participar do evento
     if (reaction.emoji.name === "✅" && !user.bot) {
       await ParticipateEvent({
         reaction,
         user,
-        eventCounter,
-        eventStore,
+        prisma,
+        message,
+        embed,
+        keyTitle,
+        eventNumber,
       });
-
-      console.log("quando participa", eventStore);
     }
 
     //função para começar o evento
@@ -106,13 +111,28 @@ client.on(
         user,
         reaction,
         creatorName,
-        eventStore,
         message,
-        eventCounter,
         embed,
+        prisma,
+        keyTitle,
+        eventNumber,
       });
     }
 
+    //função de finalizar o evento
+    if (reaction.emoji.name === "⏸") {
+      if (user.bot) return;
+
+      await FinishedEvent({
+        user,
+        message,
+        embed,
+        prisma,
+        keyTitle,
+      });
+    }
+
+    //excluir evento
     if (reaction.emoji.name === "🛑") {
       if (user.bot) return;
       if (creatorName === user.username) {
@@ -129,104 +149,12 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   if (oldState.member?.user.bot) {
     return;
   }
-  const channel = await oldState?.channel?.fetch();
-  const findMessages = await channel?.messages.fetch();
-  const messageContent = findMessages?.map((message) => {
-    return message;
-  })?.[0];
-  const embed = messageContent?.embeds[0];
 
-  //logica para verificar se o usuario saiu da salas
-  //quando o usuario sair da sala o oldState.channelId ira existir e será diferente do newState.channelIds
-  if (oldState.channelId && oldState.channelId !== newState.channelId) {
-    if (embed) {
-      const userId = oldState?.member?.user.id;
-      const userTag = `<@${userId}>`;
-      const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
-      const eventNumber = eventNumberMatch?.[1] || "";
-      const keyTitle = `Evento ${eventNumber}`;
-
-      const event = await prisma.event.findFirst({
-        where: {
-          eventName: keyTitle,
-        },
-      });
-
-      const participant = await prisma.participant.findFirst({
-        where: {
-          userId,
-        },
-      });
-
-      //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
-      if (userId && event && participant) {
-        //remover da lista de participantes no embed
-        try {
-          const participants =
-            embed.fields.find((text) => text.name === "Participantes")?.value ||
-            "Nenhum participant";
-
-          const updateParticipants = participants
-            .split("\n")
-            .filter((line) => line.trim() !== userTag)
-            .join("\n");
-
-          const updatedEmbed = new EmbedBuilder();
-          updatedEmbed.setTitle(embed.title);
-          updatedEmbed.addFields(
-            embed.fields.map((field) => {
-              if (field.name === "Participantes") {
-                return {
-                  ...field,
-                  value:
-                    updateParticipants.length > 0
-                      ? updateParticipants
-                      : "Nenhum participante",
-                };
-              }
-
-              return field;
-            })
-          );
-          updatedEmbed.setDescription(embed.description);
-          updatedEmbed.setColor(embed.color);
-
-          await messageContent.edit({ embeds: [updatedEmbed] });
-        } catch (error) {
-          console.error(
-            `Error ao atualizar a lista de participantes do ${keyTitle}`
-          );
-        }
-
-        //remover do array
-        try {
-          const joinTime = Number(participant.joinTime);
-          const totalTime = Number(participant.totalTime);
-          const counter = joinTime ? Date.now() - joinTime : 0;
-          const updateParticipant = await prisma.participant.update({
-            data: {
-              joinTime: null,
-              totalTime: totalTime + counter,
-            },
-            where: {
-              userId_eventId: {
-                eventId: event.id,
-                userId,
-              },
-            },
-          });
-          console.log("Usuário saiu da sala e do evento: ", updateParticipant);
-        } catch (error) {
-          console.error(
-            `Erro ao atualizar o tempo do usuário no banco de dados ${userTag}`,
-            error
-          );
-        }
-      } else {
-        console.error(`Usuário ${userTag} não encontrado para o ${keyTitle}`);
-      }
-    }
-  }
+  await VoiceUpdate({
+    newState,
+    oldState,
+    prisma,
+  });
 });
 
 client.login(process.env.BOT_KEY);
