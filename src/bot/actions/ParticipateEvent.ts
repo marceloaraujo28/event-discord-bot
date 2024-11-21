@@ -1,24 +1,19 @@
 import { EmbedBuilder } from "discord.js";
 import { ParticipateEventType } from "./types";
-import { PrismaClient } from "@prisma/client";
 
 export const ParticipateEvent = async ({
   reaction,
   user,
-  eventStore,
+  prisma,
+  message,
+  embed,
+  eventNumber,
+  keyTitle,
 }: ParticipateEventType) => {
-  const message = reaction.message;
   const guild = message.guild;
   const member = await guild?.members.fetch(user.id);
   const eventVoiceChannel = guild?.channels.cache.get(message.channelId);
-  const embed = message.embeds[0];
   const userMention = `<@${user.id}>`;
-
-  const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
-  const eventNumber = eventNumberMatch?.[1] || "";
-  const keyTitle = `Evento ${eventNumber}`;
-
-  const prisma = new PrismaClient();
 
   await reaction.users.remove(user.id);
   //verifica se o usuário está em algum canal de voz
@@ -37,33 +32,46 @@ export const ParticipateEvent = async ({
           where: {
             eventName: keyTitle,
           },
+          include: {
+            Participant: true,
+          },
         });
-
-        //status do evento
-        const status = event?.status;
 
         if (!event) {
           console.error(`Evento com o número ${eventNumber} não encontrado`);
           return;
         }
 
-        const participant = await prisma.participant.upsert({
-          where: {
-            userId_eventId: {
-              eventId: event.id,
-              userId: user.id,
+        //status do evento
+        const status = event?.status;
+
+        const [participant, participantCount] = await prisma.$transaction([
+          prisma.participant.upsert({
+            where: {
+              userId_eventId: {
+                eventId: event.id,
+                userId: user.id,
+              },
             },
-          },
-          update: {
-            joinTime: status === "pending" ? null : Date.now(),
-          },
-          create: {
-            userId: user.id,
-            eventId: event.id,
-            joinTime: status === "pending" ? null : Date.now(),
-            totalTime: 0,
-          },
-        });
+            update: {
+              joinTime: status === "pending" ? null : Date.now(),
+            },
+            create: {
+              userId: user.id,
+              eventId: event.id,
+              joinTime: status === "pending" ? null : Date.now(),
+              totalTime: 0,
+            },
+            include: {
+              event: true,
+            },
+          }),
+          prisma.participant.count({
+            where: {
+              eventId: event.id,
+            },
+          }),
+        ]);
 
         console.log(
           participant.id
@@ -86,6 +94,13 @@ export const ParticipateEvent = async ({
                 return {
                   ...field,
                   value: updateParticipants,
+                };
+              }
+
+              if (field.name === "Qnt Participantes") {
+                return {
+                  ...field,
+                  value: `${participantCount}`,
                 };
               }
 

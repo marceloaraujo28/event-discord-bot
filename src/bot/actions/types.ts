@@ -6,22 +6,29 @@ import {
   PartialMessageReaction,
   PartialUser,
   User,
+  VoiceState,
 } from "discord.js";
-import { ParticipantTimesType } from "../types";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
 
-export type ParticipateEventType = {
+export type EventBaseType = {
   reaction: MessageReaction | PartialMessageReaction;
   user: User | PartialUser;
-  eventCounter: number;
-  eventStore: Record<string, Record<string, ParticipantTimesType>>;
-};
-
-export type StartEventType = {
-  reaction: MessageReaction | PartialMessageReaction;
-  user: User | PartialUser;
-  eventStore: Record<string, Record<string, ParticipantTimesType>>;
-  creatorName?: string | null;
+  prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>;
   message: Message<boolean> | PartialMessage;
   embed: Embed;
-  eventCounter: number;
+  keyTitle: string;
+  eventNumber: string;
 };
+
+export type ParticipateEventType = EventBaseType;
+
+export type StartEventType = {
+  creatorName?: string | null;
+} & EventBaseType;
+
+export type FinishedEventType = Omit<EventBaseType, "reaction" | "eventNumber">;
+export type VoiceUpdateType = {
+  oldState: VoiceState;
+  newState: VoiceState;
+} & Pick<EventBaseType, "prisma">;

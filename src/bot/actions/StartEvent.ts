@@ -1,6 +1,5 @@
 import { EmbedBuilder } from "discord.js";
 import { StartEventType } from "./types";
-import { PrismaClient } from "@prisma/client";
 
 export async function StartEvent({
   user,
@@ -8,7 +7,9 @@ export async function StartEvent({
   creatorName,
   message,
   embed,
-  eventCounter,
+  prisma,
+  eventNumber,
+  keyTitle,
 }: StartEventType) {
   if (user.bot) return;
 
@@ -24,11 +25,6 @@ export async function StartEvent({
   //atualizando campos do embed a partir do momento que o evento começa
 
   if (embed) {
-    const prisma = new PrismaClient();
-    const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
-    const eventNumber = eventNumberMatch?.[1] || "";
-    const keyTitle = `Evento ${eventNumber}`;
-
     try {
       const event = await prisma.event.findFirst({
         where: {
@@ -47,6 +43,7 @@ export async function StartEvent({
         },
         data: {
           status: "started",
+          startTime: Date.now(),
         },
       });
 
@@ -81,7 +78,7 @@ export async function StartEvent({
       ]);
 
       const updatedEmbed = new EmbedBuilder()
-        .setTitle(`Evento ${eventCounter} - em andamento!`)
+        .setTitle(`Evento ${eventNumber} - em andamento!`)
         .addFields(updatedFields)
         .setDescription("Evento iniciado")
         .setColor("Green");
