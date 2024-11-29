@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/bot/index.ts"
+    "dev": "ts-node-dev --respawn src/bot/index.ts",
+    "register:commands": "ts-node src/bot/register/registerCommands.ts"
   },
   "keywords": [],
   "author": "",
