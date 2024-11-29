@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { ParticipateEventType } from "./types";
+import { sendMessageChannel } from "../utils/sendMessageChannel";
 
 export const ParticipateEvent = async ({
   reaction,
@@ -12,13 +13,31 @@ export const ParticipateEvent = async ({
 }: ParticipateEventType) => {
   const guild = message.guild;
   const member = await guild?.members.fetch(user.id);
-  const eventVoiceChannel = guild?.channels.cache.get(message.channelId);
   const userMention = `<@${user.id}>`;
 
   await reaction.users.remove(user.id);
+
+  const event = await prisma.event.findFirst({
+    where: {
+      eventName: keyTitle,
+    },
+  });
+
+  const eventVoiceChannel = guild?.channels.cache.get(event?.channelID ?? "");
+
+  const guildData = await prisma.guilds.findUnique({
+    where: {
+      guildID: guild?.id,
+    },
+  });
   //verifica se o usuário está em algum canal de voz
   if (!member?.voice.channel) {
-    return console.error("O usuário não está conectado a nenhum canal de voz.");
+    sendMessageChannel({
+      channelID: guildData?.logsChannelID,
+      messageChannel: `<@${user.id}> você precisa estar em um canal de voz para poder participar de um evento!`,
+      guild,
+    });
+    return;
   }
 
   if (embed) {
@@ -72,13 +91,6 @@ export const ParticipateEvent = async ({
             },
           }),
         ]);
-
-        console.log(
-          participant.id
-            ? `Participante entrou novamente no evento`
-            : `Novo participante adicionado ao evento`,
-          participant
-        );
 
         //se não tiver nenhum participante ele apenas adiciona no campo, se não, ele pega todos os outros e adiciona mais esse
         const updateParticipants =
