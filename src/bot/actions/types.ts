@@ -32,3 +32,8 @@ export type VoiceUpdateType = {
   oldState: VoiceState;
   newState: VoiceState;
 } & Pick<EventBaseType, "prisma">;
+
+export type DeleteEventType = { creatorName?: string | null } & Omit<
+  EventBaseType,
+  "eventNumber" | "embed"
+>;
