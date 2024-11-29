@@ -1,14 +1,29 @@
 import { EmbedBuilder, ChannelType } from "discord.js";
 import { OpenEventType } from "./types";
 import { PrismaClient } from "@prisma/client";
+import { sendMessageChannel } from "../utils/sendMessageChannel";
 
 export const OpenEvent = async ({ interaction }: OpenEventType) => {
   const guild = interaction.guild;
   const prisma = new PrismaClient();
+  const member = await guild?.members.fetch(interaction.user.id);
+
+  const guildData = await prisma.guilds.findUnique({
+    where: {
+      guildID: guild?.id,
+    },
+  });
+
+  if (!member?.voice.channel) {
+    sendMessageChannel({
+      channelID: guildData?.logsChannelID,
+      messageChannel: `<@${interaction.user.id}> você precisa estar em um canal de voz para poder iniciar um evento!`,
+      guild,
+    });
+    return;
+  }
 
   try {
-    await interaction.deferReply();
-
     //consultando ultimo evento para criar o numero do evento
     const lastEvent = await prisma.event.findFirst({
       orderBy: { id: "desc" },
@@ -16,23 +31,23 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
 
     const nextEventNumber = (lastEvent?.id ?? 0) + 1;
 
-    //criando evento no banco de dados
-    const newEvent = await prisma.event.create({
-      data: {
-        creatorId: interaction.user.id,
-        eventName: `Evento ${nextEventNumber}`,
-        createdAt: new Date(),
-      },
-    });
-
-    console.log("Evento criado: ", newEvent);
-
     //Criação do canal
 
     const eventChannel = await guild?.channels.create({
       name: `event-${nextEventNumber}`,
       type: ChannelType.GuildVoice,
       reason: `Canal criado para o Evento ${nextEventNumber}`,
+      parent: guildData?.startedCategoryID,
+    });
+
+    //criando evento no banco de dados
+    const newEvent = await prisma.event.create({
+      data: {
+        creatorId: interaction.user.id,
+        eventName: `Evento ${nextEventNumber}`,
+        createdAt: new Date(),
+        channelID: eventChannel?.id,
+      },
     });
 
     // Criação do embed
@@ -55,12 +70,12 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
       },
       {
         name: "Qnt Participantes",
-        value: "0",
+        value: "1",
         inline: true,
       },
       {
         name: "Participantes",
-        value: `Nenhum participante`,
+        value: `<@${interaction.user.id}>`,
       },
       {
         name: "Ações",
@@ -70,20 +85,48 @@ export const OpenEvent = async ({ interaction }: OpenEventType) => {
     );
     embed.setColor("Blurple");
 
-    // Enviando embed para o canal criado
+    //adicionando o usuário que criou o evento no banco de dados do evento
+    await prisma.participant.create({
+      data: {
+        userId: interaction.user.id,
+        eventId: newEvent.id,
+        joinTime: null,
+        totalTime: 0,
+      },
+    });
 
-    const eventMessage = await eventChannel?.send({ embeds: [embed] });
-
-    // Adiciona reações automaticamente
-    await eventMessage?.react("✅"); // Reação para participar
-    await eventMessage?.react("🏌️‍♀️"); // Reação para começar o evento
-    await eventMessage?.react("🛑"); // Reação para para o evento
-
-    await interaction.editReply(
-      `Evento ${nextEventNumber} criado com sucesso pelo jogador <@${interaction.user.id}>`
+    // Enviando embed para o canal de participar do evento
+    const participationChannel = guild?.channels.cache.get(
+      guildData?.participationChannelID ?? ""
     );
+
+    if (participationChannel?.isTextBased()) {
+      const eventMessage = await participationChannel?.send({
+        embeds: [embed],
+      });
+      // Adiciona reações automaticamente
+      await eventMessage?.react("✅"); // Reação para participar
+      await eventMessage?.react("🏌️‍♀️"); // Reação para começar o evento
+      await eventMessage?.react("🛑"); // Reação para para o evento
+    }
+
+    sendMessageChannel({
+      channelID: guildData?.logsChannelID,
+      messageChannel: `Evento ${nextEventNumber} criado com sucesso pelo jogador <@${interaction.user.id}>`,
+      guild,
+    });
+
+    //puxar o usuário para a sala do evento caso ele não esteja na sala ainda
+    //isso evita de o usuário estar participando do evento a partir de outra sala
+    if (eventChannel && eventChannel.isVoiceBased()) {
+      await member?.voice.setChannel(eventChannel);
+    }
   } catch (error) {
-    console.error(`Erro ao criar o canal:`, error);
-    interaction.editReply(`Falha ao criar evento`);
+    console.error(`Erro ao criar o evento:`, error);
+    sendMessageChannel({
+      channelID: guildData?.logsChannelID,
+      messageChannel: `Erro ao criar o evento!`,
+      guild,
+    });
   }
 };
