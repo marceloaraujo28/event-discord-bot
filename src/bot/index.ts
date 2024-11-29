@@ -7,35 +7,28 @@ import {
   PartialMessageReaction,
   PartialUser,
   User,
-  SlashCommandBuilder,
-  EmbedBuilder,
 } from "discord.js";
 import { OpenEvent } from "./commands/OpenEvent";
 import { ParticipateEvent } from "./actions/ParticipateEvent";
-import { ParticipantTimesType } from "./types";
 import { StartEvent } from "./actions/StartEvent";
 
 import { PrismaClient } from "@prisma/client";
 import { VoiceUpdate } from "./actions/VoiceUpdate";
 import { FinishedEvent } from "./actions/FinishedEvent";
+import { Setup } from "./commands/Setup";
+import { DeleteEvent } from "./actions/DeleteEvent";
 
 //fazer:
-//criar sala participar evento, quando o usuario iniciar o evento
-//mudar sala para texto
+//alterar embed quando finaliza evento e criar comandos de adicionar vendedor no evento
+//quando entrar e sair do discord add no banco de dados para usar no site
 //para inciar, finalizar deixar só as pessoas como adiministrador
-//quando o usuário está na sala e a sala é excluida da erro
-//logica de começar o evento
-//atualizar o join time de todos os usuários para Date now, que é quando começa o evento
-//quando o usuário sair da sala, remover atualizar o totalTime dele no eventStore e setar o join time para null
-//fazer logica de finalizar o evento, contabilizar a porcentagem de todos e atualizar o embed "@Marcelo - 100%"
 //criar comando para atualizar o saldo do evento e contabilizar para cada jogador o seu valor em relação a sua porcentagem
-//criar um canal de log e o bot enviar erros que podem acontecer
+//adicionar todos erros no log
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildVoiceStates,
   ],
@@ -44,28 +37,28 @@ const client = new Client({
 const prisma = new PrismaClient();
 
 client.once("ready", async () => {
-  console.log("Bot online");
-
-  const guild = client.guilds.cache.get("1272187120135700540");
-  if (guild) {
-    const commands = guild.commands;
-
-    await commands.create(
-      new SlashCommandBuilder()
-        .setName("openevent")
-        .setDescription("Abrir Evento")
-    );
-  }
+  console.log("Bot Online!!!!");
 });
 
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
-  const { commandName } = interaction;
+  if (interaction.isCommand()) {
+    const { commandName } = interaction;
 
-  if (commandName === "openevent") {
-    await OpenEvent({
-      interaction,
-    });
+    if (commandName === "setup") {
+      await Setup({
+        interaction,
+        prisma,
+      });
+    }
+  }
+
+  if (interaction.isButton()) {
+    switch (interaction.customId) {
+      case "create_event":
+        await interaction.deferUpdate();
+        await OpenEvent({ interaction });
+        break;
+    }
   }
 });
 
@@ -135,11 +128,14 @@ client.on(
     //excluir evento
     if (reaction.emoji.name === "🛑") {
       if (user.bot) return;
-      if (creatorName === user.username) {
-        await message.delete();
-        await message.channel.delete();
-        console.log(`${creatorName} cancelou o evento!`);
-      }
+      await DeleteEvent({
+        keyTitle,
+        message,
+        prisma,
+        reaction,
+        user,
+        creatorName,
+      });
     }
   }
 );
@@ -147,6 +143,10 @@ client.on(
 //lógica para "escutar" quando o usuário sai da sala
 client.on("voiceStateUpdate", async (oldState, newState) => {
   if (oldState.member?.user.bot) {
+    return;
+  }
+
+  if (oldState && !oldState.guild.channels.cache.has(oldState.id)) {
     return;
   }
 
