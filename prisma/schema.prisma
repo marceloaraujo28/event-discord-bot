@@ -21,6 +21,7 @@ model Event {
   endTime     BigInt?
   status      String        @default("pending")
   createdAt   DateTime      @default(now())
+  channelID   String?
   Participant Participant[]
 }
 
@@ -31,7 +32,17 @@ model Participant {
   joinTime  BigInt?
   totalTime BigInt?
 
-  event Event @relation(fields: [eventId], references: [id])
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([userId, eventId])
+}
+
+model Guilds {
+  guildID                String  @id
+  newEventChannelID      String?
+  participationChannelID String?
+  logsChannelID          String?
+  waitingVoiceChannelID  String?
+  startedCategoryID      String?
+  endedCategoryID        String?
 }
