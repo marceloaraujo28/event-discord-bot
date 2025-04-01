@@ -1,10 +1,6 @@
 import { sendMessageTypes } from "./types";
 
-export function sendMessageChannel({
-  channelID,
-  messageChannel,
-  guild,
-}: sendMessageTypes) {
+export async function sendMessageChannel({ channelID, messageChannel, guild }: sendMessageTypes) {
   if (!guild || !channelID) {
     console.error("Guild ou ChannelID não existem!");
     return;
@@ -13,6 +9,8 @@ export function sendMessageChannel({
   const channel = guild.channels.cache.get(channelID);
 
   if (channel?.isTextBased()) {
-    channel.send(messageChannel);
+    return await channel.send(messageChannel);
   }
+
+  return;
 }
