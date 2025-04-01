@@ -12,11 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "discord.js": "^14.15.3",
+    "discord.js": "^14.18.0",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.13.17",
     "nodemon": "^3.1.4",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
