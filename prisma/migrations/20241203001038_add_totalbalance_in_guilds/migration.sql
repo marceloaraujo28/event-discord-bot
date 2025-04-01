@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Guilds" ADD COLUMN     "totalBalance" DOUBLE PRECISION NOT NULL DEFAULT 0;
