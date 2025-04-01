@@ -15,10 +15,6 @@ export async function StartEvent({
 
   await reaction.users.remove(user.id);
 
-  //faz verificação para ver se o usuário que clicou na reação para começar o evento é o mesmo quem criou o evento
-  if (creatorName !== user.username) {
-    return;
-  }
   //para ficar apenas uma reação no evento
   await reaction.users.remove(user.id);
 
@@ -37,50 +33,36 @@ export async function StartEvent({
         return;
       }
 
+      const timeInitEvent = Date.now();
+
       await prisma.event.update({
         where: {
           id: event.id,
         },
         data: {
           status: "started",
-          startTime: Date.now(),
+          startTime: timeInitEvent,
         },
       });
 
-      const updateJoinTimeParticipants = await prisma.participant.updateMany({
+      await prisma.participant.updateMany({
         where: {
           eventId: event.id,
         },
         data: {
-          joinTime: Date.now(),
+          joinTime: timeInitEvent,
         },
       });
 
-      console.log(
-        "Atualizado a entrada dos participantes no evento",
-        updateJoinTimeParticipants
-      );
-
-      const updatedFields = embed.fields.map((field) => {
-        if (field.name === "Ações") {
-          return {
-            ...field,
-            value: "✅   Participar do evento\n\n⏸  Finalizar o evento",
-          };
-        }
-        return field;
-      });
-
       await Promise.all([
-        message.reactions.cache.get("🏌️‍♀️")?.remove(),
+        message.reactions.cache.get("🏁")?.remove(),
         message.reactions.cache.get("🛑")?.remove(),
         message.react("⏸"),
       ]);
 
       const updatedEmbed = new EmbedBuilder()
-        .setTitle(`Evento ${eventNumber} - em andamento!`)
-        .addFields(updatedFields)
-        .setDescription("Evento iniciado")
+        .setTitle(`Evento ${eventNumber} Criado por ${user.username} - Iniciado!`)
+        .addFields(embed.fields)
         .setColor("Green");
 
       await message.edit({ embeds: [updatedEmbed] });

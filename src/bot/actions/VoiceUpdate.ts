@@ -1,121 +1,145 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, Guild } from "discord.js";
 import { VoiceUpdateType } from "./types";
 
-export async function VoiceUpdate({
-  newState,
-  oldState,
-  prisma,
-}: VoiceUpdateType) {
+export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateType) {
   if (!oldState.channel) {
     return;
   }
-  const channel = await oldState?.channel.fetch();
-  const findMessages = await channel?.messages.fetch();
-  const messageContent = findMessages?.map((message) => {
-    return message;
-  })?.[0];
-  const embed = messageContent?.embeds[0];
 
   //logica para verificar se o usuario saiu da salas
   //quando o usuario sair da sala o oldState.channelId ira existir e será diferente do newState.channelIds
-  if (oldState.channelId && oldState.channelId !== newState.channelId) {
-    if (embed) {
-      const userId = oldState?.member?.user.id;
-      const userTag = `<@${userId}>`;
-      const eventNumberMatch = embed.title?.match(/Evento (\d+) -/);
-      const eventNumber = eventNumberMatch?.[1] || "";
-      const keyTitle = `Evento ${eventNumber}`;
+  if (!oldState.channelId || oldState.channelId === newState.channelId) {
+    return; //usuário não saiu de uma sala
+  }
 
-      const event = await prisma.event.findFirst({
-        where: {
-          eventName: keyTitle,
-        },
-      });
+  const event = await prisma.event.findFirst({
+    where: {
+      channelID: oldState.channelId,
+    },
+  });
 
-      const participant = await prisma.participant.findFirst({
-        where: {
+  if (!event) {
+    return;
+  }
+
+  const userId = oldState?.member?.user.id;
+
+  if (!userId) {
+    return;
+  }
+
+  const userTag = `<@${userId}>`;
+
+  const participant = await prisma.participant.findUnique({
+    where: {
+      userId_eventId: {
+        eventId: event.id,
+        userId,
+      },
+    },
+  });
+
+  if (!participant) {
+    console.error(`Participante ${userTag} não encontrado no evento ${event?.eventName}`);
+    return;
+  }
+
+  const guildData = await prisma.guilds.findUnique({
+    where: {
+      guildID: oldState.guild?.id,
+    },
+  });
+
+  // Busca o canal de participação configurado no banco de dados
+  const participationChannelId = guildData?.participationChannelID;
+  if (!participationChannelId) {
+    console.error(`ID do canal de participação não configurado. execute novamente o /setup`);
+    return;
+  }
+
+  // Busca o canal de participação no servidor
+  const participationChannel = await oldState.guild.channels.fetch(participationChannelId);
+  if (!participationChannel?.isTextBased()) {
+    console.error(`Canal de texto do evento não encontrado: ${participationChannelId}. execute novamente o /setup`);
+    return;
+  }
+
+  if (!event.messageID) {
+    console.error(`ID da mensagem do evento não encontrado`, oldState.guild.id);
+    return;
+  }
+
+  // Busca a mensagem do evento usando o messageID armazenado no banco
+  const message = await participationChannel.messages.fetch(event.messageID);
+  if (!message) {
+    console.error(`evento não encontrada: ${event.messageID}`);
+    return;
+  }
+
+  const embed = message.embeds[0];
+  if (!embed) {
+    console.error(`Embed não encontrado na sala de participação do evento: ${event.messageID}`);
+    return;
+  }
+
+  //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
+  //remover do banco
+
+  try {
+    const joinTime = Number(participant.joinTime);
+    const totalTime = Number(participant.totalTime);
+    const counter = joinTime ? Date.now() - joinTime : 0;
+
+    await prisma.participant.update({
+      data: {
+        joinTime: null,
+        totalTime: totalTime + counter,
+      },
+      where: {
+        userId_eventId: {
+          eventId: event.id,
           userId,
         },
-      });
+      },
+    });
 
-      //logica para fazer a contagem do tempo que o usuario ficou depois de sair do evento
-      if (userId && event && participant) {
-        //remover do banco
-        try {
-          const joinTime = Number(participant.joinTime);
-          const totalTime = Number(participant.totalTime);
-          const counter = joinTime ? Date.now() - joinTime : 0;
-          const [updateParticipant, participantCount] =
-            await prisma.$transaction([
-              prisma.participant.update({
-                data: {
-                  joinTime: null,
-                  totalTime: totalTime + counter,
-                },
-                where: {
-                  userId_eventId: {
-                    eventId: event.id,
-                    userId,
-                  },
-                },
-              }),
-              prisma.participant.count({
-                where: {
-                  eventId: event.id,
-                },
-              }),
-            ]);
+    //remover da lista de participantes no embed
 
-          //remover da lista de participantes no embed
+    const participants = embed.fields.find((text) => text.name === "Participantes")?.value || "Nenhum participant";
 
-          const participants =
-            embed.fields.find((text) => text.name === "Participantes")?.value ||
-            "Nenhum participant";
+    const updateParticipants = participants
+      .split("\n")
+      .filter((line) => line.trim() !== userTag)
+      .join("\n");
 
-          const updateParticipants = participants
-            .split("\n")
-            .filter((line) => line.trim() !== userTag)
-            .join("\n");
+    const participantCount = updateParticipants.split("\n").filter((line) => line.trim() !== "").length;
 
-          const updatedEmbed = new EmbedBuilder();
-          updatedEmbed.setTitle(embed.title);
-          updatedEmbed.addFields(
-            embed.fields.map((field) => {
-              if (field.name === "Participantes") {
-                return {
-                  ...field,
-                  value:
-                    updateParticipants.length > 0
-                      ? updateParticipants
-                      : "Nenhum participante",
-                };
-              }
-
-              if (field.name === "Qnt Participantes") {
-                return {
-                  ...field,
-                  value: `${participantCount}`,
-                };
-              }
-
-              return field;
-            })
-          );
-          updatedEmbed.setDescription(embed.description);
-          updatedEmbed.setColor(embed.color);
-
-          await messageContent.edit({ embeds: [updatedEmbed] });
-
-          console.log("Usuário saiu da sala e do evento: ", updateParticipant);
-        } catch (error) {
-          console.error(
-            `Erro ao atualizar o evento ou remover usuário no banco de dados ${userTag}`,
-            error
-          );
+    const updatedEmbed = new EmbedBuilder();
+    updatedEmbed.setTitle(embed.title);
+    updatedEmbed.addFields(
+      embed.fields.map((field) => {
+        if (field.name === "Participantes") {
+          return {
+            ...field,
+            value: updateParticipants.length > 0 ? updateParticipants : "Nenhum participante",
+          };
         }
-      } else {
-        console.error(`Usuário ${userTag} não encontrado para o ${keyTitle}`);
-      }
-    }
+
+        if (field.name === "Qnt Participantes") {
+          return {
+            ...field,
+            value: `${participantCount}`,
+          };
+        }
+
+        return field;
+      })
+    );
+    updatedEmbed.setDescription(embed.description);
+    updatedEmbed.setColor(embed.color);
+
+    await message.edit({ embeds: [updatedEmbed] });
+  } catch (error) {
+    console.error(`Erro ao atualizar o evento ou remover usuário no banco de dados ${userTag}`, error);
   }
 }

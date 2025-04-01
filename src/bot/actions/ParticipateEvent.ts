@@ -32,7 +32,7 @@ export const ParticipateEvent = async ({
   });
   //verifica se o usuário está em algum canal de voz
   if (!member?.voice.channel) {
-    sendMessageChannel({
+    await sendMessageChannel({
       channelID: guildData?.logsChannelID,
       messageChannel: `<@${user.id}> você precisa estar em um canal de voz para poder participar de um evento!`,
       guild,
@@ -42,8 +42,7 @@ export const ParticipateEvent = async ({
 
   if (embed) {
     const currentParticipants =
-      embed.fields.find((field) => field.name === "Participantes")?.value ||
-      "Nenhum participante";
+      embed.fields.find((field) => field.name === "Participantes")?.value || "Nenhum participante";
 
     if (!currentParticipants.includes(user.id)) {
       try {
@@ -64,6 +63,25 @@ export const ParticipateEvent = async ({
         //status do evento
         const status = event?.status;
 
+        //cadastrando user no banco de dados caso não exista
+        const userTable = await prisma.user.findUnique({
+          where: {
+            userId_guildID: {
+              guildID: guild?.id ?? "",
+              userId: user.id,
+            },
+          },
+        });
+
+        if (!userTable) {
+          await prisma.user.create({
+            data: {
+              userId: user.id,
+              guildID: guild?.id ?? "",
+            },
+          });
+        }
+
         const [participant, participantCount] = await prisma.$transaction([
           prisma.participant.upsert({
             where: {
@@ -77,6 +95,7 @@ export const ParticipateEvent = async ({
             },
             create: {
               userId: user.id,
+              guildID: guild?.id ?? "",
               eventId: event.id,
               joinTime: status === "pending" ? null : Date.now(),
               totalTime: 0,
@@ -92,11 +111,9 @@ export const ParticipateEvent = async ({
           }),
         ]);
 
-        //se não tiver nenhum participante ele apenas adiciona no campo, se não, ele pega todos os outros e adiciona mais esse
+        //se não tiver nenhum participante ele apenas adiciona no campo, se não, ele pega todos os outros participantes e adiciona mais esse
         const updateParticipants =
-          currentParticipants === "Nenhum participante"
-            ? userMention
-            : `${currentParticipants}\n${userMention}`;
+          currentParticipants === "Nenhum participante" ? userMention : `${currentParticipants}\n${userMention}`;
 
         const updatedEmbed = new EmbedBuilder()
           .setTitle(embed.title)
@@ -131,9 +148,7 @@ export const ParticipateEvent = async ({
         }
       } catch (error) {
         console.error(`Erro ao adicionar o participante no evento`, error);
-        reaction.message.reply(
-          `Erro ao adicionar o participante ${userMention} ao evento`
-        );
+        reaction.message.reply(`Erro ao adicionar o participante ${userMention} ao evento`);
       }
     }
   }
