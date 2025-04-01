@@ -136,7 +136,7 @@ client.on("interactionCreate", async (interaction) => {
       }
     } catch (error) {
       console.error("Erro ao processar interação:", error);
-      if (interaction.deferred || interaction.replied) {
+      if (!interaction.replied && !interaction.deferred) {
         await interaction.reply(`Ocorreu um erro ao processar o comando: ${commandName}`);
       } else {
         console.error(`Falha ao processar comando: ${commandName}`);

@@ -14,7 +14,7 @@ export async function MemberBalance({ interaction, prisma }: MemberBalanceType) 
     });
 
     if (!findUser) {
-      await interaction.reply("Usuário não encontrado na base de dados!");
+      return await interaction.reply("Usuário não encontrado na base de dados!");
     }
 
     const currentBalance = Math.round(Number(findUser?.currentBalance));
