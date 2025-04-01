@@ -138,7 +138,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
 
     if (!managerRole) {
       managerRole = await guild.roles.create({
-        name: "Albion Event Manager",
+        name: "Albion Event Bot Manager",
         color: "Red",
         hoist: true,
         mentionable: true,
