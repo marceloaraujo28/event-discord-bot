@@ -5,11 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export async function registerCommands() {
-  if (
-    !process.env.BOT_KEY ||
-    !process.env.APPLICATION_ID ||
-    !process.env.GUILD_ID_DEVELOPMENT
-  ) {
+  if (!process.env.BOT_KEY || !process.env.APPLICATION_ID || !process.env.GUILD_ID_DEVELOPMENT) {
     return;
   }
   const rest = new REST().setToken(process.env.BOT_KEY);
@@ -41,6 +37,4 @@ export async function registerCommands() {
   }
 }
 
-registerCommands().catch((error) =>
-  console.error("Erro ao registrar comandos..", error)
-);
+registerCommands().catch((error) => console.error("Erro ao registrar comandos..", error));
