@@ -14,35 +14,76 @@ datasource db {
 }
 
 model Event {
-  id          Int           @id @default(autoincrement())
-  eventName   String
-  creatorId   String
-  startTime   BigInt?
-  endTime     BigInt?
-  status      String        @default("pending")
-  createdAt   DateTime      @default(now())
-  channelID   String?
-  Participant Participant[]
+  id                    Int           @id @default(autoincrement())
+  eventName             String
+  creatorId             String
+  guildId               String
+  startTime             BigInt?
+  endTime               BigInt?
+  status                String        @default("pending")
+  createdAt             DateTime      @default(now())
+  channelID             String?
+  messageID             String?
+  confirmationMessageID String?
+  seller                String?
+  totalValue            BigInt?
+  guildFeeValue         BigInt?
+  sellerFeeValue        BigInt?
+  Participant           Participant[]
+
+  guild Guilds @relation(fields: [guildId], references: [guildID], onDelete: Cascade)
+}
+
+model GlobalEventCounter {
+  id         Int @id @default(1) // Sempre terá apenas um registro
+  lastNumber Int @default(0)
+}
+
+model User {
+  id             Int           @id @default(autoincrement()) // ID único no banco de dados
+  userId         String // ID do Discord
+  guildID        String
+  currentBalance Float         @default(0) // Saldo atual do jogador
+  totalEarned    Float         @default(0) // Total acumulado em eventos
+  participants   Participant[] // Relacionamento com a tabela de participantes
+
+  guild Guilds @relation(fields: [guildID], references: [guildID], onDelete: Cascade) // Relacionamento com Guilds
+
+  @@unique([userId, guildID]) // Permite que o mesmo usuário seja associado a várias guildas, mas apenas uma vez por guilda
 }
 
 model Participant {
-  id        Int     @id @default(autoincrement())
-  userId    String
-  eventId   Int
-  joinTime  BigInt?
-  totalTime BigInt?
+  id         Int     @id @default(autoincrement())
+  userId     String
+  eventId    Int
+  guildID    String
+  joinTime   BigInt?
+  totalTime  BigInt?
+  percentage Float   @default(0)
+  valueEvent Float   @default(0)
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guild Guilds @relation(fields: [guildID], references: [guildID], onDelete: Cascade)
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User   @relation(fields: [userId, guildID], references: [userId, guildID]) // Relacionamento com chave composta
 
   @@unique([userId, eventId])
 }
 
 model Guilds {
-  guildID                String  @id
+  guildID                String        @id
   newEventChannelID      String?
   participationChannelID String?
+  categoryID             String?
+  financialChannelID     String?
+  eventManagerRoleID     String?
   logsChannelID          String?
   waitingVoiceChannelID  String?
   startedCategoryID      String?
   endedCategoryID        String?
+  totalBalance           Float         @default(0) // Saldo total da guilda
+  guildFee               Float         @default(0)
+  sellerFee              Float         @default(0)
+  User                   User[]
+  Event                  Event[]
+  Participant            Participant[]
 }

@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Event" ADD CONSTRAINT "Event_guildId_fkey" FOREIGN KEY ("guildId") REFERENCES "Guilds"("guildID") ON DELETE CASCADE ON UPDATE CASCADE;
