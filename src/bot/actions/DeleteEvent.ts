@@ -1,16 +1,8 @@
 import { sendMessageChannel } from "../utils/sendMessageChannel";
 import { DeleteEventType } from "./types";
 
-export async function DeleteEvent({
-  keyTitle,
-  message,
-  prisma,
-  reaction,
-  user,
-  creatorName,
-}: DeleteEventType) {
-  if (creatorName === user.username) {
-    const member = await message.guild?.members.fetch(user.id);
+export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, creatorName }: DeleteEventType) {
+  try {
     const guildData = await prisma.guilds.findUnique({
       where: {
         guildID: reaction.message?.guild?.id,
@@ -23,22 +15,16 @@ export async function DeleteEvent({
       },
     });
 
-    const eventChannel = message.guild?.channels.cache.get(
-      event?.channelID ?? ""
-    );
+    const eventChannel = message.guild?.channels.cache.get(event?.channelID ?? "");
 
     if (!eventChannel || !eventChannel.isVoiceBased()) {
-      console.error(
-        "Erro ao deletar, Canal de voz do evento não encontrado ou não é um canal de voz!"
-      );
+      console.error("Erro ao deletar, Canal de voz do evento não encontrado ou não é um canal de voz!");
       return;
     }
 
     const members = eventChannel.members;
     // Buscar o canal de espera (waitingVoiceChannelID)
-    const waitingVoiceChannel = message.guild?.channels.cache.get(
-      guildData?.waitingVoiceChannelID ?? ""
-    );
+    const waitingVoiceChannel = message.guild?.channels.cache.get(guildData?.waitingVoiceChannelID ?? "");
 
     if (waitingVoiceChannel && waitingVoiceChannel.isVoiceBased()) {
       // Transferir cada membro para a sala de espera
@@ -61,12 +47,14 @@ export async function DeleteEvent({
     });
 
     //enviar mensagem de cancelamento do evento
-    sendMessageChannel({
+    await sendMessageChannel({
       messageChannel: `<@${user.id}> cancelou o evento!`,
       channelID: guildData?.logsChannelID,
       guild: reaction.message?.guild,
     });
 
     await message.delete();
+  } catch (error) {
+    console.error(`Erro ao deletar o evento ${keyTitle}`);
   }
 }
