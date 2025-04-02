@@ -72,9 +72,15 @@ export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
     await prisma.guilds.delete({ where: { guildID: guild.id } });
     await prisma.event.deleteMany({ where: { guildId: guild.id } });
 
-    await interaction.user.send("O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos.");
-
-    return await interaction.deleteReply();
+    if (!interaction.channel) {
+      return await interaction.user.send(
+        "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
+      );
+    } else {
+      return await interaction.reply(
+        "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
+      );
+    }
   } catch (error) {
     console.error(`Erro ao remover o bot na guild ${interaction.guild?.name}:${interaction.guildId}, ${error}`);
     return interaction.reply(`Aconteceu um erro ao remover o bot`);

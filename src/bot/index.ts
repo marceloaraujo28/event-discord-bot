@@ -156,12 +156,12 @@ client.on("interactionCreate", async (interaction) => {
         },
       });
 
-      const isManager = await interaction.guild.roles.fetch(guildData?.eventManagerRoleID ?? "");
+      // const isManager = await interaction.guild.roles.fetch(guildData?.eventManagerRoleID ?? "");
 
-      if (!isAdmin && !isManager) {
-        await interaction.deferUpdate();
-        return;
-      }
+      // if (!isAdmin && !isManager) {
+      //   await interaction.deferUpdate();
+      //   return;
+      // }
 
       if (!guildData || interaction.channelId !== guildData?.newEventChannelID) {
         return await interaction.deferUpdate();
@@ -236,11 +236,18 @@ client.on(
         4;
 
         if (!eventName) {
-          return await message.channel.send("Não foi possível identificar o evento!");
+          if (message.channel && "send" in message.channel) {
+            await message.channel.send("Não foi possível identificar o evento!");
+          }
+          return;
         }
 
         if (!totalValue) {
-          return await message.channel.send("Não foi possível identificar o valor do depósito!");
+          if (message.channel && "send" in message.channel) {
+            return await message.channel.send("Não foi possível identificar o valor do depósito!");
+          }
+
+          return;
         }
 
         const event = await prisma.event.findFirst({
@@ -250,7 +257,11 @@ client.on(
         });
 
         if (!event) {
-          return await message.channel.send("Evento não encontrado");
+          if (message.channel && "send" in message.channel) {
+            await message.channel.send("Evento não encontrado");
+          }
+
+          return;
         }
         if (event.status === "closed") {
           return;
@@ -320,6 +331,8 @@ client.on(
       const eventNumber = eventNumberMatch?.[1] || "";
       const keyTitle = `Evento ${eventNumber}`;
 
+      const eventCreator = creatorName === user.username;
+
       //função para participar do evento
       if (reaction.emoji.name === "🚀") {
         await ParticipateEvent({
@@ -335,7 +348,7 @@ client.on(
         return;
       }
 
-      if (!isAdmin && !isManager) {
+      if (!isAdmin && !isManager && !eventCreator) {
         await reaction.users.remove(user.id);
         return;
       }
