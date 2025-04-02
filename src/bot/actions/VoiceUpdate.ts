@@ -90,6 +90,10 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
     const totalTime = Number(participant.totalTime);
     const counter = joinTime ? Date.now() - joinTime : 0;
 
+    if (!participant) {
+      return;
+    }
+
     await prisma.participant.update({
       data: {
         joinTime: null,
