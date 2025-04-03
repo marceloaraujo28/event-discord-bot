@@ -77,12 +77,11 @@ export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
         "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
       );
     } else {
-      return await interaction.reply(
+      return await interaction.editReply(
         "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
       );
     }
   } catch (error) {
     console.error(`Erro ao remover o bot na guild ${interaction.guild?.name}:${interaction.guildId}, ${error}`);
-    return interaction.reply(`Aconteceu um erro ao remover o bot`);
   }
 }
