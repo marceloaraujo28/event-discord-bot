@@ -234,8 +234,24 @@ export async function Setup({ interaction, prisma }: SetupType) {
     } else {
       return await interaction.editReply(`Erro ao fazer o setup!`);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.log("Erro ao fazer o setup!", error);
-    return;
+
+    // Verifica se o erro é um objeto e se tem a propriedade 'code'
+    if (error instanceof Error) {
+      const err = error as any; // Força o TypeScript a aceitar as propriedades personalizadas
+
+      if (err.rawError?.code === 50013) {
+        return await interaction.editReply(
+          "⚠️ Erro: O bot não tem permissões suficientes para executar essa ação.\n" +
+            "🔧 Permissões necessárias: `Ver canais`, `Enviar mensagens`, `Gerenciar canais`, `Gerenciar mensagens`, `Adicionar reações`, `Ler histórico de mensagens`, `Conectar`, `Falar`, `Enviar embeds`, `Usar emojis externos`.\n" +
+            "💡 Verifique se essas permissões estão habilitadas para o bot no servidor."
+        );
+      }
+
+      return await interaction.editReply(`❌ Ocorreu um erro inesperado: \`${err.message || "Desconhecido"}\``);
+    }
+
+    return await interaction.editReply("❌ Ocorreu um erro inesperado e não conseguimos determinar a causa.");
   }
 }
