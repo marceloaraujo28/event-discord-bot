@@ -92,6 +92,13 @@ export async function Setup({ interaction, prisma }: SetupType) {
       parent: category.id,
     });
 
+    //criar sala de verificar saldo
+    const checkBalanceChannel = await guild?.channels.create({
+      name: "💸⠀Verificar-saldo",
+      type: ChannelType.GuildText,
+      parent: category.id,
+    });
+
     //criar a sala para mostrar os logs
     const logsChannel = await guild?.channels.create({
       name: "📝⠀Logs",
@@ -191,6 +198,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
           startedCategoryID: startedEvents?.id,
           endedCategoryID: endedEvents?.id,
           eventManagerRoleID: managerRole.id,
+          checkBalanceID: checkBalanceChannel.id,
           categoryID: category.id,
         },
         create: {
@@ -201,6 +209,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
           financialChannelID: financialChannel.id,
           waitingVoiceChannelID: waitingVoiceChannel?.id,
           startedCategoryID: startedEvents?.id,
+          checkBalanceID: checkBalanceChannel.id,
           endedCategoryID: endedEvents?.id,
           eventManagerRoleID: managerRole.id,
           categoryID: category.id,
@@ -223,10 +232,13 @@ export async function Setup({ interaction, prisma }: SetupType) {
               {
                 name: "💡 Dica",
                 value: "Adicione o cargo `Albion Event Manager` a quem deve gerenciar os eventos no servidor.",
+              },
+              {
+                name: "Suporte",
+                value: "\n\n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
               }
             )
-            .setColor("Green")
-            .setFooter({ text: "Estamos à disposição para qualquer dúvida! 🚀" }),
+            .setColor("Green"),
         ],
       });
 
@@ -249,7 +261,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
         );
       }
 
-      return await interaction.editReply(`❌ Ocorreu um erro inesperado: \`${err.message || "Desconhecido"}\``);
+      return await interaction.editReply(`❌ Ocorreu um erro inesperado ao fazer o setup`);
     }
 
     return await interaction.editReply("❌ Ocorreu um erro inesperado e não conseguimos determinar a causa.");

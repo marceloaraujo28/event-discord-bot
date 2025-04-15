@@ -37,6 +37,21 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
     return await interaction.reply(`O saldo da guild é insuficiente para realizar o pagamento!`);
   }
 
+  const searchBalance = await prisma.user.findUnique({
+    where: {
+      userId_guildID: {
+        guildID: interaction.guildId ?? "",
+        userId,
+      },
+    },
+  });
+
+  const currentBalanceUser = searchBalance?.currentBalance ?? 0;
+
+  if (valueFormatted > currentBalanceUser) {
+    return await interaction.reply(`Valor do pagamento maior que o saldo do usuário!`);
+  }
+
   const result = await prisma.$transaction([
     prisma.user.upsert({
       where: {
@@ -52,7 +67,7 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
       },
       update: {
         currentBalance: {
-          increment: valueFormatted,
+          decrement: valueFormatted,
         },
       },
     }),

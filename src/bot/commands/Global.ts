@@ -1,4 +1,3 @@
-import { Embed } from "discord.js";
 import { Balances } from "./GlobalCommands/Balances";
 import { Help } from "./GlobalCommands/Help";
 import { MemberBalance } from "./GlobalCommands/MemberBalance";
@@ -6,6 +5,7 @@ import { MyBalance } from "./GlobalCommands/MyBalance";
 import { TransferBalance } from "./GlobalCommands/TransferBalance";
 import { GlobalType } from "./types";
 import { GuildBalance } from "./GlobalCommands/GuildBalance";
+import { Price } from "./GlobalCommands/Price";
 
 export async function Global({ commandName, interaction, prisma, member }: GlobalType) {
   if (commandName === "saldos") {
@@ -54,6 +54,14 @@ export async function Global({ commandName, interaction, prisma, member }: Globa
   if (commandName === "help") {
     const embed = Help();
     await interaction.reply({ embeds: [embed] });
+    return true;
+  }
+
+  if (commandName === "preco") {
+    await Price({
+      interaction,
+      prisma,
+    });
     return true;
   }
 
