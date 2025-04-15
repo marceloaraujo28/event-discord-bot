@@ -24,6 +24,7 @@ import { ProcessDeposit } from "./actions/ProcessDeposit";
 import { Admin } from "./commands/Admin";
 import { Event } from "./commands/Event";
 import { Global } from "./commands/Global";
+import "./data/itemsLoader";
 
 const client = new Client({
   intents: [
@@ -63,7 +64,16 @@ client.on("interactionCreate", async (interaction) => {
         if (wasCommandExecuted) return;
       } else {
         // Se não for admin e tentar usar um comando restrito, retorna uma mensagem
-        const adminCommands = ["saldos", "saldo-guilda", "setup", "atualizar-taxa-guild", "atualizar-taxa-vendedor"];
+        const adminCommands = [
+          "setup",
+          "atualizar-taxa-guild",
+          "atualizar-taxa-vendedor",
+          "depositar-guild",
+          "pagar-membro",
+          "sacar-guild",
+          "confiscar-saldo",
+          "remove-bot",
+        ];
         if (adminCommands.includes(commandName)) {
           return await interaction.reply("Apenas um **Administrador** pode usar esse comando!");
         }

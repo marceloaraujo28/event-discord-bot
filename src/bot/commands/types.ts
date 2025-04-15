@@ -34,3 +34,4 @@ export type PayMemberType = BaseType;
 export type ConfiscateBalanceType = BaseType;
 export type TransferBalanceType = BaseType;
 export type RemoveBotType = BaseType;
+export type PriceType = BaseType;
