@@ -9,12 +9,13 @@ export function Help() {
     )
     .addFields(
       {
-        name: "\u2728 Configuração Inicial",
-        value: "`/setup` - Configura automaticamente as salas e permissões do bot. **(Admin)**",
+        name: "\uD83D\uDCB0 Preços Mercado\n",
+        value: "`/preco` - consulta o preço de um item no mercado - (Opcional a busca por tier e cidade).\n",
       },
       {
-        name: "\uD83D\uDCB0 Gerenciamento de Saldo\n",
+        name: "\u2728 Configuração Inicial Gerenciamento de Saldo",
         value:
+          "`/setup` - Configura automaticamente as salas e permissões do bot. **(Admin)**\n" +
           "`/meu-saldo` - Consulta seu saldo atual.\n" +
           "`/saldos` - Exibe o saldo de todos os membros da guild.\n" +
           "`/saldo-membro` - Consulta o saldo de um membro específico.\n" +
@@ -41,7 +42,7 @@ export function Help() {
       },
       {
         name: "\u2753 Ajuda",
-        value: "\n\nCaso tenha outras dúvidas: \n[Discord Albion Event Bot](https://discord.gg/seu-link-aqui)\n",
+        value: "\n\nSuporte: \n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
       }
     )
     .setFooter({ text: "Use os comandos corretamente para garantir a melhor experiência!" });
