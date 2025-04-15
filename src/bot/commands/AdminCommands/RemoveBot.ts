@@ -33,6 +33,7 @@ export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
       guildData.startedCategoryID,
       guildData.endedCategoryID,
       guildData.categoryID,
+      guildData.checkBalanceID,
       ...events.map((event) => event.channelID),
     ].filter(Boolean); // Remove valores `null` ou `undefined`
 
