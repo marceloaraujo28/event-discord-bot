@@ -106,4 +106,29 @@ export const commands = [
     ),
   new SlashCommandBuilder().setName("help").setDescription("Para ver comandos disponíveis e entender os fluxos!"),
   new SlashCommandBuilder().setName("remove-bot").setDescription("Remove todas as salas e canais criados pelo bot"),
+  new SlashCommandBuilder()
+    .setName("preco")
+    .setDescription("Consulta o valor de um item, é opcional buscar por cidade")
+    .addStringOption((option) =>
+      option
+        .setName("item")
+        .setDescription("Item que deseja consulta o preço, exemplo: casaco de mercenário")
+        .setRequired(true)
+    )
+    .addStringOption((option) => option.setName("tier").setDescription("Tier e encantamento do item, exemplo: 5.3"))
+    .addStringOption((option) =>
+      option
+        .setName("cidade")
+        .setDescription("Cidade onde o preço será consultado")
+        .setChoices(
+          { name: "Black Market", value: "3003" },
+          { name: "Brecilien", value: "5003" },
+          { name: "Bridgewatch", value: "2004" },
+          { name: "Thetford", value: "0007" },
+          { name: "Caerleon", value: "3005" },
+          { name: "Fort Sterling", value: "4002" },
+          { name: "Lymhurst", value: "1002" },
+          { name: "Martlock", value: "3008" }
+        )
+    ),
 ];
