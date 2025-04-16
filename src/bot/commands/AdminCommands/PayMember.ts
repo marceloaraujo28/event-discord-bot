@@ -2,16 +2,17 @@ import { sendMessageChannel } from "../../utils/sendMessageChannel";
 import { PayMemberType } from "../types";
 
 export async function PayMember({ interaction, prisma }: PayMemberType) {
+  await interaction.deferReply();
   const user = interaction.options.get("membro")?.user;
   const value = interaction.options.get("valor")?.value?.toString().trim();
   const userId = user?.id || "";
 
   if (!value) {
-    return await interaction.reply("Campo em branco! Por favor digite um número");
+    return await interaction.editReply("Campo em branco! Por favor digite um número");
   }
   const regex = /^[0-9,\.]+$/;
   if (!regex.test(value)) {
-    return await interaction.reply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+    return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
   }
 
   // Remover pontos e vírgulas do valor que vem no comando
@@ -34,7 +35,7 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
       guild: interaction.guild,
     });
 
-    return await interaction.reply(`O saldo da guild é insuficiente para realizar o pagamento!`);
+    return await interaction.editReply(`O saldo da guild é insuficiente para realizar o pagamento!`);
   }
 
   const searchBalance = await prisma.user.findUnique({
@@ -49,7 +50,7 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
   const currentBalanceUser = searchBalance?.currentBalance ?? 0;
 
   if (valueFormatted > currentBalanceUser) {
-    return await interaction.reply(`Valor do pagamento maior que o saldo do usuário!`);
+    return await interaction.editReply(`Valor do pagamento maior que o saldo do usuário!`);
   }
 
   const result = await prisma.$transaction([
@@ -84,7 +85,7 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
   ]);
 
   if (!result) {
-    return await interaction.reply("Erro ao tentar realizar pagamento para o jogador!");
+    return await interaction.editReply("Erro ao tentar realizar pagamento para o jogador!");
   }
 
   await sendMessageChannel({
@@ -95,7 +96,7 @@ export async function PayMember({ interaction, prisma }: PayMemberType) {
     guild: interaction.guild,
   });
 
-  return await interaction.reply(
+  return await interaction.editReply(
     `Pagamento para <@${userId}> no valor de \`${valueFormatted.toLocaleString("en-US")}\` realizado com sucesso!`
   );
 }

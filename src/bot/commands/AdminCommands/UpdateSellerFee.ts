@@ -65,6 +65,6 @@ export async function UpdateSellerFee({ interaction, prisma }: UpdateSellerFeeTy
     console.error(
       `Erro ao atualizar a taxa do vendedor no servidor: ${interaction.guild?.name} ${interaction.guildId}`
     );
-    return;
+    return interaction.editReply("Erro ao atualizar taxa do vendedor");
   }
 }

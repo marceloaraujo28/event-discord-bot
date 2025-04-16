@@ -2,6 +2,7 @@ import { sendMessageChannel } from "../../utils/sendMessageChannel";
 import { ConfiscateBalanceType } from "../types";
 
 export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalanceType) {
+  await interaction.deferReply();
   const user = interaction.options.get("membro")?.user;
 
   try {
@@ -15,7 +16,7 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
     });
 
     if (!findUser) {
-      return await interaction.reply("Usuário não encontrado na base de dados!");
+      return await interaction.editReply("Usuário não encontrado na base de dados!");
     }
 
     //retirar saldo do usuário e depositar na guild
@@ -45,7 +46,7 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
     ]);
 
     if (!result) {
-      return await interaction.reply("Erro ao tentar confiscar saldo do usuário!");
+      return await interaction.editReply("Erro ao tentar confiscar saldo do usuário!");
     }
     const guildData = await prisma.guilds.findUnique({
       where: {
@@ -59,9 +60,9 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
       channelID: guildData?.financialChannelID,
     });
 
-    return await interaction.reply(`Saldo do jogador <@${user?.id}> confiscado com sucesso!`);
+    return await interaction.editReply(`Saldo do jogador <@${user?.id}> confiscado com sucesso!`);
   } catch (error) {
     console.log("Erro ao confiscar saldo do usuário!", error);
-    return await interaction.reply("Erro no banco ao tentar confiscar saldo do jogador!");
+    return await interaction.editReply("Erro no banco ao tentar confiscar saldo do jogador!");
   }
 }

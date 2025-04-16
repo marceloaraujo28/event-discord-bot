@@ -2,13 +2,14 @@ import { sendMessageChannel } from "../../utils/sendMessageChannel";
 import { GuildDepositType } from "../types";
 
 export async function GuildDeposit({ interaction, prisma }: GuildDepositType) {
+  await interaction.deferReply();
   const depositValue = interaction.options.get("valor")?.value?.toString().trim();
   if (!depositValue) {
-    return await interaction.reply("Campo em branco! Por favor digite um número");
+    return await interaction.editReply("Campo em branco! Por favor digite um número");
   }
   const regex = /^[0-9,\.]+$/;
   if (!regex.test(depositValue)) {
-    return await interaction.reply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+    return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
   }
 
   // Remover pontos e vírgulas do valor que vem no comando
@@ -26,7 +27,7 @@ export async function GuildDeposit({ interaction, prisma }: GuildDepositType) {
   });
 
   if (!depositTable) {
-    return await interaction.reply("Erro ao realizar o depósito!");
+    return await interaction.editReply("Erro ao realizar o depósito!");
   }
   const guildData = await prisma.guilds.findUnique({
     where: {
@@ -44,7 +45,7 @@ export async function GuildDeposit({ interaction, prisma }: GuildDepositType) {
     guild: interaction.guild,
   });
 
-  return await interaction.reply(
+  return await interaction.editReply(
     `Depósito efetuado com sucesso! o saldo agora é de: \`${currentValue.toLocaleString("en-US")}\``
   );
 }

@@ -151,5 +151,6 @@ export async function SimulateEvent({ interaction, prisma, event }: SimulateEven
     await interaction.editReply({ embeds: [newEmbed] });
   } catch (error) {
     console.error("Error ao simular o evento", error);
+    return await interaction.editReply("Erro ao simular o evento");
   }
 }

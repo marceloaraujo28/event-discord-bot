@@ -92,5 +92,6 @@ export async function UpdateParticipation({ interaction, prisma, event }: Update
     );
   } catch (error) {
     console.error("Erro ao atualizar participação", error);
+    await interaction.editReply("Erro ao atualizar participação");
   }
 }

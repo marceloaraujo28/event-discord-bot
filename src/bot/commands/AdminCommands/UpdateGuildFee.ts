@@ -61,6 +61,6 @@ export async function UpdateGuildFee({ interaction, prisma }: UpdateGuildFeeType
     return interaction.editReply(`<@${interaction.user.id}> atualizou a taxa da guild para ${updatedFee.guildFee}%`);
   } catch (error) {
     console.error(`Erro ao atualizar a taxa da guild no servidor: ${interaction.guild?.name} ${interaction.guildId}`);
-    return;
+    return interaction.editReply("Erro ao atualizar a taxa da guild");
   }
 }

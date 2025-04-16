@@ -2,13 +2,14 @@ import { sendMessageChannel } from "../../utils/sendMessageChannel";
 import { WithdrawGuildType } from "../types";
 
 export async function WithdrawGuild({ interaction, prisma }: WithdrawGuildType) {
+  await interaction.deferReply();
   const withdrawValue = interaction.options.get("valor")?.value?.toString().trim();
   if (!withdrawValue) {
-    return await interaction.reply("Campo em branco! Por favor digite um número");
+    return await interaction.editReply("Campo em branco! Por favor digite um número");
   }
   const regex = /^[0-9,\.]+$/;
   if (!regex.test(withdrawValue)) {
-    return await interaction.reply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+    return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
   }
 
   // Remover pontos e vírgulas do valor que vem no comando
@@ -33,7 +34,7 @@ export async function WithdrawGuild({ interaction, prisma }: WithdrawGuildType) 
       guild: interaction.guild,
     });
 
-    return await interaction.reply(`O saldo da guild é insuficiente para realizar o saque!`);
+    return await interaction.editReply(`O saldo da guild é insuficiente para realizar o saque!`);
   }
 
   const withdraw = await prisma.guilds.update({
@@ -48,7 +49,7 @@ export async function WithdrawGuild({ interaction, prisma }: WithdrawGuildType) 
   });
 
   if (!withdraw) {
-    return await interaction.reply("Erro ao realizar o saque!");
+    return await interaction.editReply("Erro ao realizar o saque!");
   }
 
   const currentValue = Math.round(withdraw.totalBalance);
@@ -61,7 +62,7 @@ export async function WithdrawGuild({ interaction, prisma }: WithdrawGuildType) 
     guild: interaction.guild,
   });
 
-  return await interaction.reply(
+  return await interaction.editReply(
     `Saque efetuado com sucesso! o saldo agora é de: \`${currentValue.toLocaleString("en-US")}\``
   );
 }

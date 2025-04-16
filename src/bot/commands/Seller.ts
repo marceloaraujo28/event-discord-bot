@@ -52,6 +52,6 @@ export async function Seller({ interaction, prisma, event }: SellerType) {
     });
   } catch (error) {
     console.error("Error ao buscar evento no banco de dados, guild:", interaction?.guild?.id, error);
-    return;
+    return await interaction.editReply("Erro ao vincular vendedor");
   }
 }

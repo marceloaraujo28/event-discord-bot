@@ -84,5 +84,10 @@ export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
     }
   } catch (error) {
     console.error(`Erro ao remover o bot na guild ${interaction.guild?.name}:${interaction.guildId}, ${error}`);
+    if (!interaction.channel) {
+      return await interaction.user.send("Erro ao remover o bot, entre em contato com o suporte");
+    } else {
+      return await interaction.editReply("Erro ao remover o bot, entre em contato com o suporte");
+    }
   }
 }
