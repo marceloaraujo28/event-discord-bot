@@ -63,6 +63,7 @@ model Participant {
 model Guilds {
   guildID                String        @id
   newEventChannelID      String?
+  language               String?       @default("pt-BR")
   participationChannelID String?
   logsChannelID          String?
   waitingVoiceChannelID  String?

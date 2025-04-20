@@ -1,31 +1,27 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder } from "discord.js";
 import { SetupType } from "../types";
+import { useT } from "../../utils/useT";
 
 export async function Setup({ interaction, prisma }: SetupType) {
   const guild = interaction.guild;
+  const language = interaction.options.get("idioma")?.value as string;
 
   await interaction.deferReply({ ephemeral: true });
-
-  if (!guild) {
-    return await interaction.editReply(`Erro ao buscar a guild!!`);
-  }
+  const t = useT(language);
 
   try {
-    const guildInfo = await prisma.guilds.findUnique({
-      where: {
-        guildID: guild.id,
-      },
-    });
-
+    if (!guild) {
+      return await interaction.editReply(t("setup.noGuild"));
+    }
     //criar categoria de canais para iniciar eventos
     const category = await guild?.channels.create({
       type: ChannelType.GuildCategory,
-      name: "💎Área de eventos💎",
+      name: t("setup.categoryEventArea"),
     });
 
     //criar a sala para criação de eventos
     const newEvent = await guild?.channels.create({
-      name: "⛳⠀criar-evento",
+      name: t("setup.categoryCreateEvent"),
       type: ChannelType.GuildText,
       parent: category?.id,
     });
@@ -33,23 +29,27 @@ export async function Setup({ interaction, prisma }: SetupType) {
     //criar embed na sala de criar eventos
     const embed = new EmbedBuilder();
 
-    embed.setTitle("Criar Evento #Albion Event Bot V1.0");
+    embed.setTitle(t("setup.embedCreateEvent.title"));
     embed.setFields(
       {
-        name: "Criar um evento",
-        value: "Reaja com o emoji ⚔️ para criar um evento",
+        name: t("setup.embedCreateEvent.field1title"),
+        value: t("setup.embedCreateEvent.field1value"),
       },
       {
-        name: "Taxa da guild",
-        value: `${guildInfo?.guildFee || 0}%`,
+        name: t("setup.embedCreateEvent.field2title"),
+        value: `${t("setup.embedCreateEvent.field2value", {
+          guildFee: 0,
+        })}`,
       },
       {
-        name: "Taxa do vendedor",
-        value: `${guildInfo?.sellerFee || 0}%`,
+        name: t("setup.embedCreateEvent.field3title"),
+        value: `${t("setup.embedCreateEvent.field3value", {
+          sellerFee: 0,
+        })}`,
       },
       {
-        name: "Expiração do bot:",
-        value: "indeterminado",
+        name: t("setup.embedCreateEvent.field4title"),
+        value: t("setup.embedCreateEvent.field4value"),
       }
     );
     embed.setImage(
@@ -71,7 +71,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
 
     const createEventButton = new ButtonBuilder()
       .setCustomId("create_event")
-      .setLabel("⚔️ Criar Evento")
+      .setLabel(t("setup.createEventButton"))
       .setStyle(ButtonStyle.Secondary);
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(createEventButton);
@@ -80,48 +80,48 @@ export async function Setup({ interaction, prisma }: SetupType) {
 
     //criar a sala para participar dos eventos
     const participationEvent = await guild?.channels.create({
-      name: "🎮⠀Participar evento",
+      name: t("setup.participateEventChannel"),
       type: ChannelType.GuildText,
       parent: category?.id,
     });
 
     //criar a sala de financeiro
     const financialChannel = await guild?.channels.create({
-      name: "💰⠀Financeiro",
+      name: t("setup.financeChannel"),
       type: ChannelType.GuildText,
       parent: category.id,
     });
 
     //criar sala de verificar saldo
     const checkBalanceChannel = await guild?.channels.create({
-      name: "💸⠀Verificar-saldo",
+      name: t("setup.checkBalanceChannel"),
       type: ChannelType.GuildText,
       parent: category.id,
     });
 
     //criar a sala para mostrar os logs
     const logsChannel = await guild?.channels.create({
-      name: "📝⠀Logs",
+      name: t("setup.logsChannel"),
       type: ChannelType.GuildText,
       parent: category?.id,
     });
 
     //criar sala de espera de conteudo
     const waitingVoiceChannel = await guild?.channels.create({
-      name: "Aguardando conteúdo",
+      name: t("setup.waitingVoicechannel"),
       type: ChannelType.GuildVoice,
       parent: category?.id,
     });
 
     const startedEvents = await guild?.channels.create({
-      name: "eventos iniciados",
+      name: t("setup.startedEvents"),
       type: ChannelType.GuildCategory,
     });
 
     //criar categoria de canais eventos encerrados e eventos iniciados
     const endedEvents = await guild?.channels.create({
       type: ChannelType.GuildCategory,
-      name: "eventos finalizados",
+      name: t("setup.endedEvents"),
     });
 
     const findRole = await prisma.guilds.findUnique({
@@ -137,7 +137,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
       try {
         roles = await interaction.guild.roles.fetch(roleId);
       } catch (error) {
-        console.error(`Erro ao buscar cargo ${roleId}, na guild ${guild.id}`);
+        console.error(`${t("setup.errorSearchRole", { roleId, guildId: guild.id })}`);
       }
     }
 
@@ -219,51 +219,44 @@ export async function Setup({ interaction, prisma }: SetupType) {
       await interaction.user.send({
         embeds: [
           new EmbedBuilder()
-            .setTitle("🎉 Obrigado por usar o Albion Event Bot! 🎉")
-            .setDescription(
-              "O setup foi concluído com sucesso! Agora seu servidor está pronto para criar eventos e gerenciar sua comunidade com facilidade."
-            )
+            .setTitle(t("setup.welcomeEmbed.title"))
+            .setDescription(t("setup.welcomeEmbed.description"))
             .addFields(
               {
-                name: "📌 Próximos Passos",
-                value:
-                  "Use o comando `/help` para ver todos os comandos disponíveis e aprender como configurar os eventos.",
+                name: t("setup.welcomeEmbed.field1name"),
+                value: t("setup.welcomeEmbed.field1value"),
               },
               {
-                name: "💡 Dica",
-                value: "Adicione o cargo `Albion Event Manager` a quem deve gerenciar os eventos no servidor.",
+                name: t("setup.welcomeEmbed.field2name"),
+                value: t("setup.welcomeEmbed.field2value"),
               },
               {
-                name: "Suporte",
-                value: "\n\n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
+                name: t("setup.welcomeEmbed.field3name"),
+                value: t("setup.welcomeEmbed.field3value", { discordLink: "https://discord.gg/AjGZbc5b2s" }),
               }
             )
             .setColor("Green"),
         ],
       });
 
-      return await interaction.editReply(`Setup finalizado com sucesso!!`);
+      return await interaction.editReply(t("setup.setupFinished"));
     } else {
-      return await interaction.editReply(`Erro ao fazer o setup!`);
+      return await interaction.editReply(t("setup.setupError"));
     }
   } catch (error: unknown) {
-    console.log("Erro ao fazer o setup!", error);
+    console.log(t("setup.catchError"), error);
 
     // Verifica se o erro é um objeto e se tem a propriedade 'code'
     if (error instanceof Error) {
       const err = error as any; // Força o TypeScript a aceitar as propriedades personalizadas
 
       if (err.rawError?.code === 50013) {
-        return await interaction.editReply(
-          "⚠️ Erro: O bot não tem permissões suficientes para executar essa ação.\n" +
-            "🔧 Permissões necessárias: `Ver canais`, `Enviar mensagens`, `Gerenciar canais`, `Gerenciar mensagens`, `Adicionar reações`, `Ler histórico de mensagens`, `Conectar`, `Falar`, `Enviar embeds`, `Usar emojis externos`.\n" +
-            "💡 Verifique se essas permissões estão habilitadas para o bot no servidor."
-        );
+        return await interaction.editReply(t("setup.catchError2"));
       }
 
-      return await interaction.editReply(`❌ Ocorreu um erro inesperado ao fazer o setup`);
+      return await interaction.editReply(t("setup.catchError3"));
     }
 
-    return await interaction.editReply("❌ Ocorreu um erro inesperado e não conseguimos determinar a causa.");
+    return await interaction.editReply(t("setup.catchError4"));
   }
 }

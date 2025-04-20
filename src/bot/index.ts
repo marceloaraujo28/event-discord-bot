@@ -25,6 +25,7 @@ import { Admin } from "./commands/Admin";
 import { Event } from "./commands/Event";
 import { Global } from "./commands/Global";
 import "./data/itemsLoader";
+import { initI18n } from "./locales/initI18n";
 
 const client = new Client({
   intents: [
@@ -42,6 +43,11 @@ client.once("ready", async () => {
     client,
     prisma,
   });
+
+  const guild = await client.guilds.fetch("645347703487725600");
+  console.log(guild.name);
+
+  await initI18n();
 
   console.log(`Bot online como ${client.user?.tag}`);
 });
