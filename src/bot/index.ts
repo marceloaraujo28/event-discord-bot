@@ -44,9 +44,6 @@ client.once("ready", async () => {
     prisma,
   });
 
-  const guild = await client.guilds.fetch("645347703487725600");
-  console.log(guild.name);
-
   await initI18n();
 
   console.log(`Bot online como ${client.user?.tag}`);
