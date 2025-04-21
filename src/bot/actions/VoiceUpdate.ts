@@ -70,12 +70,14 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
   }
 
   // Busca a mensagem do evento usando o messageID armazenado no banco
-  const message = await participationChannel.messages.fetch(event.messageID);
-  if (!message) {
-    console.error(`evento não encontrada: ${event.messageID}`);
+  let message;
+
+  try {
+    message = await participationChannel.messages.fetch(event.messageID);
+  } catch (error) {
+    console.error(`Mensagem do evento ${event.messageID} não encontrada ou já deletada`, error);
     return;
   }
-
   const embed = message.embeds[0];
   if (!embed) {
     console.error(`Embed não encontrado na sala de participação do evento: ${event.messageID}`);
