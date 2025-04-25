@@ -1,16 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { StartEventType } from "./types";
 
-export async function StartEvent({
-  user,
-  reaction,
-  creatorName,
-  message,
-  embed,
-  prisma,
-  eventNumber,
-  keyTitle,
-}: StartEventType) {
+export async function StartEvent({ user, reaction, message, embed, prisma, eventNumber, keyTitle }: StartEventType) {
   if (user.bot) return;
 
   await reaction.users.remove(user.id);
@@ -67,7 +58,7 @@ export async function StartEvent({
 
       await message.edit({ embeds: [updatedEmbed] });
 
-      console.log(`${keyTitle} iniciado!`);
+      console.log(`${keyTitle} iniciado na guild ${reaction.message.guild?.name}!`);
     } catch (error) {
       console.error("Error ao inserir o evento no banco de dados", error);
     }

@@ -1,102 +1,114 @@
 import { sendMessageChannel } from "../../utils/sendMessageChannel";
+import { useT } from "../../utils/useT";
 import { PayMemberType } from "../types";
 
-export async function PayMember({ interaction, prisma }: PayMemberType) {
+export async function PayMember({ interaction, prisma, guildData }: PayMemberType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+
+  const t = useT(language);
+
   const user = interaction.options.get("membro")?.user;
   const value = interaction.options.get("valor")?.value?.toString().trim();
   const userId = user?.id || "";
 
   if (!value) {
-    return await interaction.editReply("Campo em branco! Por favor digite um número");
+    return await interaction.editReply(t("payMember.invalidValue"));
   }
   const regex = /^[0-9,\.]+$/;
   if (!regex.test(value)) {
-    return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+    return await interaction.editReply(t("payMember.invalidValue2"));
   }
 
   // Remover pontos e vírgulas do valor que vem no comando
   const valueFormatted = Math.round(Number(value.replace(/[.,]/g, "")));
-
-  const guildData = await prisma.guilds.findUnique({
-    where: {
-      guildID: interaction.guildId ?? "",
-    },
-  });
 
   const currentBalance = guildData?.totalBalance ?? 0;
 
   if (currentBalance < valueFormatted) {
     await sendMessageChannel({
       channelID: guildData?.financialChannelID,
-      messageChannel: `<@${interaction.user.id}> tentou realizar um pagamento de \`${valueFormatted.toLocaleString(
-        "en-US"
-      )}\` para o jogador <@${userId}>, mas a guild não possui saldo suficiente!`,
+      messageChannel: t("payMember.insufficientGuildBalance", {
+        interactionUserId: interaction.user.id,
+        userId,
+        withdrawValue: valueFormatted.toLocaleString("en-US"),
+      }),
       guild: interaction.guild,
     });
 
-    return await interaction.editReply(`O saldo da guild é insuficiente para realizar o pagamento!`);
+    return await interaction.editReply(t("payMember.insufficientGuildBalanceMessage"));
   }
 
-  const searchBalance = await prisma.user.findUnique({
-    where: {
-      userId_guildID: {
-        guildID: interaction.guildId ?? "",
-        userId,
-      },
-    },
-  });
-
-  const currentBalanceUser = searchBalance?.currentBalance ?? 0;
-
-  if (valueFormatted > currentBalanceUser) {
-    return await interaction.editReply(`Valor do pagamento maior que o saldo do usuário!`);
-  }
-
-  const result = await prisma.$transaction([
-    prisma.user.upsert({
+  try {
+    const searchBalance = await prisma.user.findUnique({
       where: {
         userId_guildID: {
           guildID: interaction.guildId ?? "",
           userId,
         },
       },
-      create: {
+    });
+
+    const currentBalanceUser = searchBalance?.currentBalance ?? 0;
+
+    if (valueFormatted > currentBalanceUser) {
+      return await interaction.editReply(t("payMember.insufficientUserBalance"));
+    }
+
+    const result = await prisma.$transaction([
+      prisma.user.upsert({
+        where: {
+          userId_guildID: {
+            guildID: interaction.guildId ?? "",
+            userId,
+          },
+        },
+        create: {
+          userId,
+          currentBalance: valueFormatted,
+          guildID: interaction.guildId ?? "",
+        },
+        update: {
+          currentBalance: {
+            decrement: valueFormatted,
+          },
+        },
+      }),
+      prisma.guilds.update({
+        where: {
+          guildID: interaction.guildId ?? "",
+        },
+        data: {
+          totalBalance: {
+            decrement: valueFormatted,
+          },
+        },
+      }),
+    ]);
+
+    if (!result) {
+      return await interaction.editReply(t("payMember.erroPayMember"));
+    }
+
+    await sendMessageChannel({
+      channelID: guildData?.financialChannelID,
+      messageChannel: t("payMember.successPayMember", {
+        interactionUserId: interaction.user.id,
         userId,
-        currentBalance: valueFormatted,
-        guildID: interaction.guildId ?? "",
-      },
-      update: {
-        currentBalance: {
-          decrement: valueFormatted,
-        },
-      },
-    }),
-    prisma.guilds.update({
-      where: {
-        guildID: interaction.guildId ?? "",
-      },
-      data: {
-        totalBalance: {
-          decrement: valueFormatted,
-        },
-      },
-    }),
-  ]);
+        withdrawValue: valueFormatted.toLocaleString("en-US"),
+      }),
+      guild: interaction.guild,
+    });
 
-  if (!result) {
-    return await interaction.editReply("Erro ao tentar realizar pagamento para o jogador!");
+    return await interaction.editReply(
+      t("payMember.successPayMemberMessage", {
+        userId: userId,
+        withdrawValue: valueFormatted.toLocaleString("en-US"),
+      })
+    );
+  } catch (error) {
+    console.error("Error ao pagar membro", error);
+    return await interaction.editReply(t("payMember.catchError"));
   }
-
-  await sendMessageChannel({
-    channelID: guildData?.financialChannelID,
-    messageChannel: `<@${interaction.user.id}> realizou um pagamento de \`${valueFormatted.toLocaleString(
-      "en-US"
-    )}\` para o jogador <@${userId}>`,
-    guild: interaction.guild,
-  });
-
-  return await interaction.editReply(
-    `Pagamento para <@${userId}> no valor de \`${valueFormatted.toLocaleString("en-US")}\` realizado com sucesso!`
-  );
 }

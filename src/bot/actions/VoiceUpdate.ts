@@ -30,17 +30,23 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
 
   const userTag = `<@${userId}>`;
 
-  const participant = await prisma.participant.findUnique({
-    where: {
-      userId_eventId: {
-        eventId: event.id,
-        userId,
-      },
-    },
-  });
+  let participant;
 
-  if (!participant) {
-    console.error(`Participante ${userTag} não encontrado no evento ${event?.eventName}`);
+  try {
+    participant = await prisma.participant.findUnique({
+      where: {
+        userId_eventId: {
+          eventId: event.id,
+          userId,
+        },
+      },
+    });
+
+    if (!participant) {
+      return;
+    }
+  } catch (error) {
+    console.error(`Erro ao buscar participante ${userTag} no evento ${event.eventName}`, error);
     return;
   }
 
@@ -91,10 +97,6 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
     const joinTime = Number(participant.joinTime);
     const totalTime = Number(participant.totalTime);
     const counter = joinTime ? Date.now() - joinTime : 0;
-
-    if (!participant) {
-      return;
-    }
 
     await prisma.participant.update({
       data: {

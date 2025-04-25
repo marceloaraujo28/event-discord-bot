@@ -42,6 +42,64 @@ const enUS = {
     catchError3: "❌ An unexpected error occurred during setup",
     catchError4: "❌ An unexpected error occurred, and we couldn't determine the cause.",
   },
+  updateGuildFee: {
+    noGuild: "Error updating fee, guild id does not exist",
+    noFee: "Please enter a valid value",
+    eventChannelNotFound: "Event channel not found for updating seller fee",
+    eventChannelNotFound2: "Event channel not found for updating guild fee",
+    embedNotFound: "Error: Unable to find the event creation embed",
+    updateSuccess: "<@{{userId}}> updated the guild fee to {{guildFee}}%",
+    updateError: "Error updating guild fee in the database",
+  },
+  updateSellerFee: {
+    noGuild: "Error updating fee, guild id does not exist",
+    noFee: "Please enter a valid value",
+    eventChannelNotFound: "Event channel not found in the database",
+    eventChannelNotFound2: "Event channel not found for updating seller fee",
+    embedNotFound: "Error: Unable to find the event creation embed",
+    updateSuccess: "<@{{userId}}> updated the seller fee to {{sellerFee}}%",
+    updateError: "Error updating seller fee in the database",
+  },
+  guildDeposit: {
+    invalidValue: "This field is blank. Please enter a number.",
+    invalidValue2: "Invalid input. Please enter a valid number, e.g., 1,000,000.",
+    updateDepositError: "Error processing the deposit.",
+    updateDepositSuccess:
+      "<@{{userId}}> made a deposit of `{{depositValue}}` to the guild. Current balance: `{{currentValue}}`.",
+    successDeposit: "Deposit completed successfully! The balance is now: `{{currentValue}}`.",
+    catchError: "There was an error processing the deposit. Please contact support.",
+  },
+  withdrawGuild: {
+    invalidValue: "Field is blank, please enter a number",
+    invalidValue2: "Invalid input. Please enter a valid number, example: 1,000,000",
+    withdrawInsuficient:
+      "<@{{userId}}> attempted to withdraw `{{withdrawValue}}` but the guild does not have enough balance!",
+    withdrawInsuficientMessage: "The guild's balance is insufficient to complete the withdrawal",
+    withdrawError: "Error processing the withdrawal",
+    withdrawSuccess:
+      "<@{{userId}}> withdrew `{{withdrawValue}}` from the guild's balance, current balance: `{{currentValue}}`",
+    withdrawSuccessMessage: "Withdrawal completed successfully. The balance is now: `{{currentValue}}`",
+    catchError: "Error processing the withdrawal, please contact support",
+  },
+  payMember: {
+    invalidValue: "Field is blank. Please enter a number",
+    invalidValue2: "Invalid input. Please enter a valid number, example: 1,000,000",
+    insufficientGuildBalance:
+      "<@{{interactionUserId}}> attempted to make a payment of `{{withdrawValue}}` to the player <@{{userId}}>, but the guild does not have enough balance!",
+    insufficientGuildBalanceMessage: "The guild's balance is insufficient to complete the payment",
+    insufficientUserBalance: "Payment amount exceeds the user's balance",
+    erroPayMember: "Error attempting to make a payment to the player",
+    successPayMember: "<@{{interactionUserId}}> made a payment of `{{withdrawValue}}` to the player <@{{userId}}>",
+    successPayMemberMessage: "Payment to <@{{userId}}> of `{{withdrawValue}}` was successfully completed",
+    catchError: "Error processing the payment, please contact support",
+  },
+  confiscateBalance: {
+    userNotFound: "User not found in the database",
+    confiscateBalanceError: "Error attempting to confiscate user balance",
+    confiscateBalanceSuccess: "<@{{interactionUserId}}> confiscated the balance of player <@{{userId}}>",
+    confiscateBalanceSuccessMessage: "The balance of player <@{{userId}}> was successfully confiscated",
+    confiscateBalanceErrorMessage: "Error in the database while attempting to confiscate the player's balance",
+  },
 };
 
 export default enUS;
