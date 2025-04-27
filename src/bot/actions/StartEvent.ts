@@ -67,7 +67,7 @@ export async function StartEvent({
 
       await message.edit({ embeds: [updatedEmbed] });
 
-      console.log(`${keyTitle} iniciado!`);
+      console.log(`${keyTitle} iniciado! na guild ${message.guild?.name}`);
     } catch (error) {
       console.error("Error ao inserir o evento no banco de dados", error);
     }
