@@ -108,7 +108,7 @@ export async function Price({ interaction }: PriceType) {
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`📦 ${itemName}`)
+      .setTitle(`🍀 ${itemName}`)
       .setColor(0x00aeff)
       .setThumbnail(`https://render.albiononline.com/v1/item/${itemId}.png`)
       .addFields(

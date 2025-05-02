@@ -104,7 +104,7 @@ export async function Admin({ commandName, interaction, prisma }: AdminType) {
     return true;
   }
 
-  if (commandName === "remove-bot") {
+  if (commandName === "remover-bot") {
     await RemoveBot({
       interaction,
       prisma,

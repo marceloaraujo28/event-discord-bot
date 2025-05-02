@@ -1,25 +1,29 @@
 import { EmbedBuilder } from "discord.js";
 import { EventDepositType } from "../types";
+import { useT } from "../../utils/useT";
 
-export async function EventDeposit({ interaction, prisma, event }: EventDepositType) {
+export async function EventDeposit({ interaction, prisma, event, guildData }: EventDepositType) {
   await interaction.deferReply();
 
+  const language = guildData.language;
+  const t = useT(language);
+
   if (event.status !== "finished") {
-    return await interaction.editReply(`\n\`Esse comando só pode ser usado em um evento que foi finalizado!\``);
+    return await interaction.editReply(t("eventDeposit.noFininishedEvent"));
   }
 
   try {
     const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
 
     if (!message) {
-      await interaction.editReply("Mensagens do canal do evento foram excluídas!");
+      await interaction.editReply(t("eventDeposit.noMessage"));
       return;
     }
 
     const embed = message?.embeds[0];
 
     if (!embed) {
-      return await interaction.editReply("Evento não encontrado na sala!");
+      return await interaction.editReply(t("eventDeposit.noEmbed"));
     }
 
     const guildData = await prisma.guilds.findUnique({
@@ -31,22 +35,22 @@ export async function EventDeposit({ interaction, prisma, event }: EventDepositT
     const financeChannelId = guildData?.financialChannelID;
 
     if (!financeChannelId) {
-      return await interaction.editReply(`\n\`Canal financeiro não configurado para esta guilda!\``);
+      return await interaction.editReply(t("eventDeposit.noFinancialChannel"));
     }
 
     const financeChannel = await interaction.guild?.channels.fetch(financeChannelId);
 
     if (!financeChannel || !financeChannel.isTextBased()) {
-      return await interaction.editReply(`\n\`Canal financeiro não encontrado ou inválido!\``);
+      return await interaction.editReply(t("eventDeposit.noFinancialChannel2"));
     }
 
     const depositValue = interaction.options.get("valor")?.value?.toString().trim();
     if (!depositValue) {
-      return await interaction.editReply("Campo em branco! Por favor digite um número");
+      return await interaction.editReply(t("eventDeposit.noValue"));
     }
     const regex = /^[0-9,\.]+$/;
     if (!regex.test(depositValue)) {
-      return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+      return await interaction.editReply(t("eventDeposit.invalidValue"));
     }
 
     const taxaGuild = guildData.guildFee / 100;
@@ -61,20 +65,21 @@ export async function EventDeposit({ interaction, prisma, event }: EventDepositT
 
     const valueDistribuidoRounded = Math.round(valueDistribuido);
 
+    //depositValueFormatted.toLocaleString("en-US")
+    //event.eventName
     // Enviar a mensagem de confirmação no canal financeiro
+    //valueDistribuidoRounded.toLocaleString("en-US")
     const confirmationMessage = await financeChannel.send({
       embeds: [
         new EmbedBuilder()
-          .setTitle("Confirmação de Depósito")
+          .setTitle(t("eventDeposit.embed.title"))
           .setDescription(
-            `<@${interaction.user.id}> informou o valor total de \`${depositValueFormatted.toLocaleString(
-              "en-US"
-            )}\` arreacadado no **${
-              event.eventName
-            }**.\n\n  valor a ser distribuído entre os participantes **(com taxas)**: \` ${valueDistribuidoRounded.toLocaleString(
-              "en-US"
-            )} \`   \n\n
-                              ✅ **Clique na reação abaixo para confirmar.**`
+            t("eventDeposit.embed.description", {
+              userId: interaction.user.id,
+              depositValue: depositValueFormatted.toLocaleString("en-US"),
+              eventName: event.eventName,
+              valueDistribuido: valueDistribuidoRounded.toLocaleString("en-US"),
+            })
           )
           .setColor("Gold"),
       ],
@@ -90,9 +95,9 @@ export async function EventDeposit({ interaction, prisma, event }: EventDepositT
       },
     });
 
-    await interaction.editReply(`Pedido de depósito enviado para o canal <#${financeChannelId}>!`);
+    await interaction.editReply(t("eventDeposit.embed.successOrder", { financeChannelId }));
   } catch (error) {
     console.error("Error ao fazer pedido de depósito");
-    return await interaction.editReply("Error ao fazer pedido de depósito");
+    return await interaction.editReply(t("eventDeposit.embed.catchError"));
   }
 }

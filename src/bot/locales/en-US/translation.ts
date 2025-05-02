@@ -100,6 +100,65 @@ const enUS = {
     confiscateBalanceSuccessMessage: "The balance of player <@{{userId}}> was successfully confiscated",
     confiscateBalanceErrorMessage: "Error in the database while attempting to confiscate the player's balance",
   },
+  updateLanguage: {
+    updateError: "Error updating the language in the database, please contact support",
+  },
+  removeBot: {
+    noGuild: "Unable to find the guild",
+    embed: {
+      title: "Rooms successfully removed",
+      description:
+        "The event bot has been successfully removed.\n All associated channels, roles, and events have been deleted. Thank you for using our services!\n Join our Discord server if you have any feedback or suggestions, feel free to share them with us.",
+      footer: "See you soon!",
+    },
+    errorRemove: "Error removing the bot, please contact support",
+  },
+  simulateEvent: {
+    noMessage: "Event channel messages have been deleted",
+    noEmbed: "Event not found in the room",
+    noGuildId: "Unable to fetch the guild ID",
+    noGuild: "Guild not found in the database",
+    emptyValue: "Field is blank, please enter a number",
+    invalidValue: "Invalid input. Please enter a valid number, example: 1,000,000",
+    errorUpdateEvent: "Error updating the value of {{eventName}}",
+    embed: {
+      title: "SALE SIMULATION OF {{eventName}}",
+      seller: "Seller",
+      valueTotal: "Total value",
+      guildFee: "Guild fee",
+      sellerFee: "Seller fee",
+      participants: "Participants",
+      distribuitedTotal: "Total to be distributed among participants with applied fees:",
+      nextSteps: "Next step",
+      nextStepsValue:
+        "Use the command below to deposit the event value into the players' balance:\n```\n/deposit-event {{eventValue}}\n```",
+      catchError: "Error simulating the event, please contact support",
+    },
+  },
+  eventDeposit: {
+    noFininishedEvent: "\n`This command can only be used for finished events`",
+    noMessage: "Event channel messages have been deleted",
+    noEmbed: "Event not found in the room",
+    noFinancialChannel: "\n`Financial channel not configured for this guild`",
+    noFinancialChannel2: "\n`Financial channel not found or invalid`",
+    noValue: "Field is blank. Please enter a number",
+    invalidValue: "Invalid input. Please enter a valid number, example: 1,000,000",
+    embed: {
+      title: "Deposit Confirmation",
+      description:
+        "<@{{userId}}> reported the total value of `{{depositValue}}` collected in **{{eventName}}**.\n\n Value to be distributed among participants **(with fees applied)**: `{{valueDistribuido}}`\n\n ✅ **Click the reaction below to confirm.**",
+      successOrder: "Deposit request sent to the channel <#{{financeChannelId}}>.",
+      catchError: "Error processing the deposit, please contact support",
+    },
+  },
+  updateParticipation: {
+    noMessage: "Event channel messages have been deleted",
+    noEmbed: "Event not found in the room",
+    errorUpdateParticipation: "Error updating the participation of user <@{{userId}}>",
+    successUpdateParticipation:
+      "<@{{interactionUserId}}> updated the participation of user <@{{userId}}> to {{updatedPercentage}}%",
+    catchError: "Error updating the user's participation, please contact support",
+  },
 };
 
 export default enUS;

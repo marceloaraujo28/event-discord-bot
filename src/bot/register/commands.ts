@@ -1285,8 +1285,9 @@ export const commands = [
       tr: "Mevcut komutları görmek ve akışları anlamak için!",
     }),
   new SlashCommandBuilder()
-    .setName("remove-bot")
+    .setName("remover-bot")
     .setNameLocalizations({
+      "en-US": "remove-bot",
       de: "entfernen-bot",
       fr: "supprimer-bot",
       ru: "udalit-bot",
@@ -1303,11 +1304,13 @@ export const commands = [
     })
     .setDescription("Remove todas as salas e canais criados pelo bot")
     .setDescriptionLocalizations({
+      "en-US": "Remove all rooms and channels created by the bot",
       de: "Entfernen Sie alle vom Bot erstellten Räume und Kanäle",
       fr: "Supprimer toutes les salles et canaux créés par le bot",
       ru: "Udalit vse komnaty i kanaly, sozdannye botom",
       pl: "Usuń wszystkie pokoje i kanały utworzone przez bota",
       "es-ES": "Eliminar todas las salas y canales creados por el bot",
+      "pt-BR": "Remover todas as salas e canais criados pelo bot",
       it: "Rimuovi tutte le stanze e i canali creati dal bot",
       "zh-CN": "删除机器人创建的所有房间和频道",
       ko: "봇이 생성한 모든 방과 채널 제거",

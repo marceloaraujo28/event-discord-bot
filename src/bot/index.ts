@@ -33,6 +33,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -75,7 +76,7 @@ client.on("interactionCreate", async (interaction) => {
           "pagar-membro",
           "sacar-guild",
           "confiscar-saldo",
-          "remove-bot",
+          "remover-bot",
         ];
         if (adminCommands.includes(commandName)) {
           return await interaction.reply("Apenas um **Administrador** pode usar esse comando!");
@@ -112,6 +113,11 @@ client.on("interactionCreate", async (interaction) => {
           },
         });
 
+        if (!guildData) {
+          await interaction.reply("Guild não encontrada no banco de dados!");
+          return;
+        }
+
         const isManager = await interaction?.guild?.roles.fetch(guildData?.eventManagerRoleID ?? "");
 
         if (commandName === "vendedor") {
@@ -140,6 +146,7 @@ client.on("interactionCreate", async (interaction) => {
             event,
             interaction,
             prisma,
+            guildData,
           });
         } else {
           return await interaction.reply(`\n\`/${commandName}\` só pode ser usado pelo vendedor!`);

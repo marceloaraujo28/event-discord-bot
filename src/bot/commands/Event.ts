@@ -3,12 +3,13 @@ import { SimulateEvent } from "./EventCommands/SimulateEvent";
 import { UpdateParticipation } from "./EventCommands/UpdateParticipation";
 import { EventCommandsType } from "./types";
 
-export async function Event({ commandName, event, interaction, prisma }: EventCommandsType) {
+export async function Event({ commandName, event, interaction, prisma, guildData }: EventCommandsType) {
   if (commandName === "simular-evento") {
     await SimulateEvent({
       interaction,
       prisma,
       event,
+      guildData,
     });
     return true;
   }
@@ -18,6 +19,7 @@ export async function Event({ commandName, event, interaction, prisma }: EventCo
       interaction,
       prisma,
       event,
+      guildData,
     });
 
     return true;
@@ -28,6 +30,7 @@ export async function Event({ commandName, event, interaction, prisma }: EventCo
       interaction,
       prisma,
       event,
+      guildData,
     });
     return true;
   }

@@ -1,3 +1,5 @@
+import { error } from "console";
+
 const ptBR = {
   setup: {
     noGuild: "Erro ao buscar guild",
@@ -101,6 +103,65 @@ const ptBR = {
     confiscateBalanceSuccess: "<@{{interactionUserId}}> confiscou o saldo do jogador <@{{userId}}>",
     confiscateBalanceSuccessMessage: "Saldo do jogador <@{{userId}}> confiscado com sucesso",
     confiscateBalanceErrorMessage: "Erro no banco ao tentar confiscar saldo do jogador",
+  },
+  updateLanguage: {
+    updateError: "Erro ao atualizar a linguagem no banco de dados, entre em contato com o suporte",
+  },
+  removeBot: {
+    noGuild: "Não foi possível encontrar a guild",
+    embed: {
+      title: "Salas removidas com sucesso",
+      description:
+        "O bot de evento foi removido com sucesso.\n Todos os canais, cargos e eventos associados foram excluídos. Agradecemos por ter utilizado nossos serviços!\n Entre em nosso servidor do Discord, se você tiver algum feedback ou sugestão, não hesite em nos enviar",
+      footer: "Até breve!",
+    },
+    errorRemove: "Erro ao remover o bot, entre em contato com o suporte",
+  },
+  simulateEvent: {
+    noMessage: "Mensagens do canal do evento foram excluídas",
+    noEmbed: "Evento não encontrado na sala",
+    noGuildId: "Não foi possível buscar o id da guild",
+    noGuild: "Guild não encontrada no banco de dados",
+    emptyValue: "Campo em branco, Por favor digite um número",
+    invalidValue: "Entrada inválida. Por favor, insira um número válido ex: 1,000,000",
+    errorUpdateEvent: "Erro ao atualizar o valor do {{eventName}}",
+    embed: {
+      title: "SIMULAÇÃO DE VENDA DO {{eventName}}",
+      seller: "Vendedor",
+      valueTotal: "Valor total",
+      guildFee: "Taxa da guild",
+      sellerFee: "Taxa do vendedor",
+      participants: "Participantes",
+      distribuitedTotal: "Total a ser distrubuído entre os participantes com taxas aplicadas:",
+      nextSteps: "Próximo passo",
+      nextStepsValue:
+        "Utilize o comando abaixo para depositar o valor do evento no saldo dos jogadores:\n```\n/depositar-evento {{eventValue}}\n```",
+      catchError: "Erro ao simular o evento, entre em contato com o suporte",
+    },
+  },
+  eventDeposit: {
+    noFininishedEvent: "\n`Esse comando só pode ser utilizado em eventos finalizados`",
+    noMessage: "Mensagens do canal do evento foram excluídas",
+    noEmbed: "Evento não encontrado na sala",
+    noFinancialChannel: "\n`Canal financeiro não configurado para esta guilda`",
+    noFinancialChannel2: "\n`Canal financeiro não encontrado ou inválido`",
+    noValue: "Campo em branco. Por favor digite um número",
+    invalidValue: "Entrada inválida. Por favor, insira um número válido exemplo: 1,000,000",
+    embed: {
+      title: "Confirmação de Depósito",
+      description:
+        "<@{{userId}}> informou o valor total de `{{depositValue}}` arrecadado no **{{eventName}}**.\n\n valor a ser distribuído entre os participantes **(com taxas)**: `{{valueDistribuido}}`\n\n ✅ **Clique na reação abaixo para confirmar.**",
+      successOrder: "Pedido de depósito enviado para o canal <#{{financeChannelId}}>",
+      catchError: "Erro ao realizar o depósito, entre em contato com o suporte",
+    },
+  },
+  updateParticipation: {
+    noMessage: "Mensagens do canal do evento foram excluídas",
+    noEmbed: "Evento não encontrado na sala",
+    errorUpdateParticipation: "Erro ao atualizar a participação do usuário <@{{userId}}>",
+    successUpdateParticipation:
+      "<@{{interactionUserId}}> atualizou a participação do usuário <@{{userId}}> para {{updatedPercentage}}%",
+    catchError: "Erro ao atualizar a participação do usuário, entre em contato com o suporte",
   },
 };
 

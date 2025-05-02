@@ -1,27 +1,31 @@
 import { EmbedBuilder } from "discord.js";
 import { UpdateParticipationType } from "../types";
+import { useT } from "../../utils/useT";
 
-export async function UpdateParticipation({ interaction, prisma, event }: UpdateParticipationType) {
+export async function UpdateParticipation({ interaction, prisma, event, guildData }: UpdateParticipationType) {
   await interaction.deferReply();
 
-  const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
-
-  if (!message) {
-    await interaction.editReply("Mensagens do canal do evento foram excluídas!");
-    return;
-  }
-
-  const embed = message?.embeds[0];
-
-  if (!embed) {
-    return await interaction.editReply("Evento não encontrado na sala!");
-  }
-
-  const user = interaction.options.get("membro")?.user;
-  const updatedPercentage = interaction.options.get("participacao")?.value;
-  const userId = user?.id || "";
+  const language = guildData.language;
+  const t = useT(language);
 
   try {
+    const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
+
+    if (!message) {
+      await interaction.editReply(t("updateParticipation.noMessage"));
+      return;
+    }
+
+    const embed = message?.embeds[0];
+
+    if (!embed) {
+      return await interaction.editReply(t("updateParticipation.noEmbed"));
+    }
+
+    const user = interaction.options.get("membro")?.user;
+    const updatedPercentage = interaction.options.get("participacao")?.value;
+    const userId = user?.id || "";
+
     //cadastrando user no banco de dados caso não exista
     const userTable = await prisma.user.findUnique({
       where: {
@@ -42,7 +46,7 @@ export async function UpdateParticipation({ interaction, prisma, event }: Update
     }
 
     // Atualiza ou adiciona o participante no banco de dados
-    await prisma.participant.upsert({
+    const updateParticipant = await prisma.participant.upsert({
       where: { userId_eventId: { userId, eventId: event.id } },
       update: { percentage: Number(updatedPercentage) },
       create: {
@@ -52,6 +56,19 @@ export async function UpdateParticipation({ interaction, prisma, event }: Update
         percentage: Number(updatedPercentage),
       },
     });
+
+    // Verifica se o usuário foi atualizado com sucesso
+    if (!updateParticipant) {
+      console.error(
+        "Erro ao atualizar a participação do usuário",
+        userId,
+        event.id,
+        "na guild:",
+        interaction.guild?.id
+      );
+      await interaction.editReply(t("updateParticipation.errorUpdateParticipation", { userId }));
+      return;
+    }
 
     // Busca os participantes atualizados no banco
     const updatedParticipants = await prisma.participant.findMany({
@@ -63,23 +80,16 @@ export async function UpdateParticipation({ interaction, prisma, event }: Update
       .map((participant) => `<@${participant.userId}> : ${participant.percentage}%`)
       .join("\n");
 
+    const embedFields = [...embed.fields];
+    embedFields[3] = {
+      ...embedFields[3],
+      value: participationList,
+    };
+
     // Atualiza o embed mantendo os outros campos inalterados
     const updatedEmbed = new EmbedBuilder()
       .setTitle(embed.title)
-      .addFields(
-        embed.fields
-          .filter((field) => field.name !== "Ações")
-          .map((field) => {
-            if (field.name === "Participantes") {
-              return {
-                ...field,
-                value: participationList,
-              };
-            }
-
-            return field;
-          })
-      )
+      .addFields(embedFields)
       .setDescription(embed.description)
       .setColor("DarkButNotBlack");
 
@@ -88,10 +98,14 @@ export async function UpdateParticipation({ interaction, prisma, event }: Update
     // await message.reply({ embeds: [updatedEmbed] });
 
     await interaction.editReply(
-      `<@${interaction.user.id}> atualizou a participação de <@${userId}> para ${updatedPercentage}%!`
+      t("updateParticipation.successUpdateParticipation", {
+        interactionUserId: interaction.user.id,
+        userId,
+        updatedPercentage,
+      })
     );
   } catch (error) {
     console.error("Erro ao atualizar participação", error);
-    await interaction.editReply("Erro ao atualizar participação");
+    await interaction.editReply(t("updateParticipation.catchError"));
   }
 }

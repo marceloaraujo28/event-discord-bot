@@ -1,24 +1,29 @@
 import { EmbedBuilder } from "discord.js";
 import { SimulateEventType } from "../types";
+import { useT } from "../../utils/useT";
 
-export async function SimulateEvent({ interaction, prisma, event }: SimulateEventType) {
+export async function SimulateEvent({ interaction, prisma, event, guildData }: SimulateEventType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+  const t = useT(language);
+
   try {
     const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
 
     if (!message) {
-      await interaction.editReply("Mensagens do canal do evento foram excluídas!");
+      await interaction.editReply(t("simulateEvent.noMessage"));
       return;
     }
 
     const embed = message?.embeds[0];
 
     if (!embed) {
-      return await interaction.editReply("Evento não encontrado na sala!");
+      return await interaction.editReply("simulateEvent.noEmbed");
     }
 
     if (!interaction.guildId) {
-      return await interaction.editReply("Não foi possível buscar o id da guild!");
+      return await interaction.editReply(t("simulateEvent.noGuildId"));
     }
 
     const guild = await prisma.guilds.findUnique({
@@ -28,11 +33,13 @@ export async function SimulateEvent({ interaction, prisma, event }: SimulateEven
     });
 
     if (!guild) {
-      return await interaction.editReply("Guild não encontrada no banco de dados!");
+      return await interaction.editReply(t("simulateEvent.noGuild"));
     }
 
-    const participantMentions = embed.fields.find((field) => field.name === "Participantes")?.value || "";
-    const participantIds = participantMentions.match(/<@(\d+)>/g)?.map((mention) => mention.replace(/[<@>]/g, ""));
+    //field participantes
+    const participantsMentions = embed.fields[3].value;
+
+    const participantIds = participantsMentions.match(/<@(\d+)>/g)?.map((mention) => mention.replace(/[<@>]/g, ""));
 
     const participantsData = await prisma.participant.findMany({
       where: {
@@ -49,12 +56,12 @@ export async function SimulateEvent({ interaction, prisma, event }: SimulateEven
 
     const totalValue = interaction.options.get("valor")?.value?.toString().trim();
     if (!totalValue) {
-      return await interaction.editReply("Campo em branco! Por favor digite um número");
+      return await interaction.editReply(t("simulateEvent.emptyValue"));
     }
     // Verificar se é um número válido com vírgulas e pontos
     const regex = /^[0-9,\.]+$/;
     if (!regex.test(totalValue)) {
-      return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+      return await interaction.editReply(t("simulateEvent.invalidValue"));
     }
 
     const taxaGuild = guild.guildFee;
@@ -85,7 +92,7 @@ export async function SimulateEvent({ interaction, prisma, event }: SimulateEven
 
     if (!updateValueEvent) {
       console.log("Erro ao atualizar o valor do evento", event?.eventName);
-      return;
+      return await interaction.editReply(t("simulateEvent.errorUpdateEvent", { eventName: event?.eventName }));
     }
 
     // Somar todas as porcentagens dos participantes
@@ -112,45 +119,47 @@ export async function SimulateEvent({ interaction, prisma, event }: SimulateEven
       .map((p) => `<@${p.userId}>: ${p.roundedValue.toLocaleString("en-US")}`)
       .join("\n");
 
-    const newEmbed = new EmbedBuilder().setTitle(`SIMULAÇÃO DE VENDA DO ${event?.eventName.toUpperCase()}`).addFields(
-      {
-        name: "Seller",
-        value: `<@${event?.seller}>`,
-        inline: true,
-      },
-      {
-        name: "Valor total",
-        value: `${totalValueFormatted.toLocaleString("en-US")}`,
-        inline: true,
-      },
-      {
-        name: "Taxa guilda",
-        value: `${taxaGuild}% (${valueTaxaGuildRounded.toLocaleString("en-US")})`,
-        inline: true,
-      },
-      {
-        name: "Taxa vendedor",
-        value: `${taxaSeller}% (${valueTaxaSellerRounded.toLocaleString("en-US")})`,
-      },
-      {
-        name: "Participantes",
-        value: distributionList,
-      },
-      {
-        name: "Total a ser distrubuído entre os participantes com taxas aplicadas",
-        value: `${totalValueWithFees.toLocaleString("en-US")}`,
-      },
-      {
-        name: "Próximo passo",
-        value: `Utilize o comando abaixo para depositar o valor do evento na guilda:\n\`\`\`\n/depositar-evento ${totalValueFormatted.toLocaleString(
-          "en-US"
-        )}\n\`\`\``,
-      }
-    );
+    const newEmbed = new EmbedBuilder()
+      .setTitle(t("simulateEvent.embed.title", { eventName: event?.eventName.toUpperCase() }))
+      .addFields(
+        {
+          name: t("simulateEvent.embed.seller"),
+          value: `<@${event?.seller}>`,
+          inline: true,
+        },
+        {
+          name: t("simulateEvent.embed.valueTotal"),
+          value: `${totalValueFormatted.toLocaleString("en-US")}`,
+          inline: true,
+        },
+        {
+          name: t("simulateEvent.embed.guildFee"),
+          value: `${taxaGuild}% (${valueTaxaGuildRounded.toLocaleString("en-US")})`,
+          inline: true,
+        },
+        {
+          name: t("simulateEvent.embed.sellerFee"),
+          value: `${taxaSeller}% (${valueTaxaSellerRounded.toLocaleString("en-US")})`,
+        },
+        {
+          name: t("simulateEvent.embed.participants"),
+          value: distributionList,
+        },
+        {
+          name: t("simulateEvent.embed.distribuitedTotal"),
+          value: `**${totalValueWithFees.toLocaleString("en-US")}**`,
+        },
+        {
+          name: t("simulateEvent.embed.nextSteps"),
+          value: t("simulateEvent.embed.nextStepsValue", {
+            eventValue: totalValueFormatted.toLocaleString("en-US"),
+          }),
+        }
+      );
 
     await interaction.editReply({ embeds: [newEmbed] });
   } catch (error) {
     console.error("Error ao simular o evento", error);
-    return await interaction.editReply("Erro ao simular o evento");
+    return await interaction.editReply(t("simulateEvent.catchError"));
   }
 }

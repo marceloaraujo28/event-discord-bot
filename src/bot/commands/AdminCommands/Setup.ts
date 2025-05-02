@@ -6,7 +6,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
   const guild = interaction.guild;
   const language = interaction.options.get("idioma")?.value as string;
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply();
   const t = useT(language);
 
   try {
