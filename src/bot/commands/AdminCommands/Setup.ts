@@ -40,16 +40,21 @@ export async function Setup({ interaction, prisma }: SetupType) {
         value: "Reaja com o emoji ⚔️ para criar um evento",
       },
       {
-        name: "Taxa da guild",
+        name: "🧾 Taxa da guild",
         value: `${guildInfo?.guildFee || 0}%`,
       },
       {
-        name: "Taxa do vendedor",
+        name: "💸 Taxa do vendedor",
         value: `${guildInfo?.sellerFee || 0}%`,
       },
       {
-        name: "Expiração do bot:",
-        value: "indeterminado",
+        name: "⌛ Expiração do bot:",
+        value: "o seu bot expira em: tempo indeterminado",
+      },
+      {
+        name: "🔊 Suporte",
+        value:
+          "Para entrar em contato com nossa equipe de suporte, Acesse nosso [Discord Oficial](https://discord.gg/AjGZbc5b2s).",
       }
     );
     embed.setImage(

@@ -364,7 +364,7 @@ client.on(
                 .setDescription(
                   `<@${user.id}> informou o valor de **${totalValue.toLocaleString(
                     "en-US"
-                  )} moedas**, e ele já foi depositado e distribuído entre os participantes do **${event.eventName}**.`
+                  )} de pratas**, e ele já foi depositado no saldo dos participantes do **${event.eventName}**.`
                 )
                 .setColor("Green");
 
