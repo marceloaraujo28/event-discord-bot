@@ -23,22 +23,37 @@ export async function handleGuildEvents({ client, prisma }: GuildEventType) {
         return;
       }
 
-      const guild = client.guilds.cache.get(guildId) || (await client.guilds.fetch(guildId).catch(() => null));
+      let guild;
+      try {
+        guild = client.guilds.cache.get(guildId) || (await client.guilds.fetch(guildId));
+      } catch (err) {
+        return;
+      }
 
       if (!guild) {
         console.log(`Guilda ${guildId} não encontrada no cache nem no fetch.`);
         return;
       }
 
-      const channel = guild.channels.cache.get(channelID) || (await guild.channels.fetch(channelID).catch(() => null));
+      let channel;
+      try {
+        channel = guild.channels.cache.get(channelID) || (await guild.channels.fetch(channelID));
+      } catch (err) {
+        return;
+      }
 
-      if (!channel || !channel.isTextBased()) {
-        console.log(`Canal ${channelID} (${channelType}) não encontrado ou não é baseado em texto.`);
+      if (!channel?.isTextBased?.()) {
+        console.log(`⚠️ Canal ${channelID} (${channelType}) não é baseado em texto.`);
         return;
       }
 
       // Buscar as últimas mensagens para garantir que o bot tenha o contexto correto
-      await channel.messages.fetch({ limit: 100 });
+      try {
+        await channel.messages.fetch({ limit: 100 });
+        console.log("Mensagens buscadas com sucesso do canal:", channel.name, guild.name);
+      } catch (err) {
+        console.log(`⚠️ Falha ao buscar mensagens no canal ${channelID} da guilda ${guildId}:`, err);
+      }
     };
 
     // Iterar sobre todas as guildas e buscar canais de participação e financeiro

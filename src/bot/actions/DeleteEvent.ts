@@ -3,6 +3,8 @@ import { DeleteEventType } from "./types";
 
 export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, creatorName }: DeleteEventType) {
   try {
+    await reaction.users.remove(user.id);
+
     const guildData = await prisma.guilds.findUnique({
       where: {
         guildID: reaction.message?.guild?.id,

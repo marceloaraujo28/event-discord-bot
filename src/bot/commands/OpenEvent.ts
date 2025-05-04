@@ -2,9 +2,18 @@ import { EmbedBuilder, ChannelType } from "discord.js";
 import { OpenEventType } from "./types";
 import { PrismaClient } from "@prisma/client";
 import { sendMessageChannel } from "../utils/sendMessageChannel";
+import { isInCooldown, setCooldown } from "../utils/cooldown";
 
 export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
   const guild = interaction.guild;
+
+  if (isInCooldown(interaction.user.id)) {
+    console.log(`Usuário ${interaction.user.username}:${interaction.user.id} está em cooldown.`);
+    return;
+  }
+
+  setCooldown(interaction.user.id);
+
   const prisma = new PrismaClient();
   const member = await guild?.members.fetch(interaction.user.id);
 
