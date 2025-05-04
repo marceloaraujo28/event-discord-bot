@@ -1,5 +1,3 @@
-import { error } from "console";
-
 const ptBR = {
   setup: {
     noGuild: "Erro ao buscar guild",
@@ -9,12 +7,15 @@ const ptBR = {
       title: "Criar Evento #Albion Event Bot V1.0",
       field1title: "Criar um evento",
       field1value: "Reaja com o emoji ⚔️ para criar um evento",
-      field2title: "Taxa da guild",
+      field2title: "🧾 Taxa da guild",
       field2value: "{{guildFee}}%",
-      field3title: "Taxa do vendedor",
+      field3title: "💸 Taxa do vendedor",
       field3value: "{{sellerFee}}%",
-      field4title: "Expiração do bot:",
-      field4value: "Tempo indeterminado",
+      field4title: "⌛ Expiração do bot:",
+      field4value: "O Bot expira em: tempo indeterminado",
+      field5title: "🔊 Suporte",
+      field5value:
+        "Para entrar em contato com nossa equipe de suporte, Acesse nosso [Discord Oficial](https://discord.gg/AjGZbc5b2s)",
     },
     createEventButton: "⚔️ Criar Evento",
     participateEventChannel: "🎮⠀Participar evento",

@@ -50,6 +50,10 @@ export async function Setup({ interaction, prisma }: SetupType) {
       {
         name: t("setup.embedCreateEvent.field4title"),
         value: t("setup.embedCreateEvent.field4value"),
+      },
+      {
+        name: t("setup.embedCreateEvent.field5title"),
+        value: t("setup.embedCreateEvent.field5value"),
       }
     );
     embed.setImage(
