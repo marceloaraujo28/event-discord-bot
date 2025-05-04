@@ -433,6 +433,7 @@ client.on(
           embed,
           prisma,
           keyTitle,
+          reaction,
         });
 
         return;

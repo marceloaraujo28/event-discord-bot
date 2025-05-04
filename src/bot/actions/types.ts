@@ -27,13 +27,10 @@ export type StartEventType = {
   creatorName?: string | null;
 } & EventBaseType;
 
-export type FinishedEventType = Omit<EventBaseType, "reaction" | "eventNumber">;
+export type FinishedEventType = Omit<EventBaseType, "eventNumber">;
 export type VoiceUpdateType = {
   oldState: VoiceState;
   newState: VoiceState;
 } & Pick<EventBaseType, "prisma">;
 
-export type DeleteEventType = { creatorName?: string | null } & Omit<
-  EventBaseType,
-  "eventNumber" | "embed"
->;
+export type DeleteEventType = { creatorName?: string | null } & Omit<EventBaseType, "eventNumber" | "embed">;
