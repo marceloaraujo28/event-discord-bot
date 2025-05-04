@@ -8,6 +8,9 @@ export async function Balances({ interaction, prisma }: BalancesType) {
       where: {
         guildID: interaction.guildId ?? "",
       },
+      orderBy: {
+        currentBalance: "desc",
+      },
     });
 
     if (!users.length) {

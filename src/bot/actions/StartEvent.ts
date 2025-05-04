@@ -1,27 +1,16 @@
 import { EmbedBuilder } from "discord.js";
 import { StartEventType } from "./types";
 
-export async function StartEvent({
-  user,
-  reaction,
-  creatorName,
-  message,
-  embed,
-  prisma,
-  eventNumber,
-  keyTitle,
-}: StartEventType) {
+export async function StartEvent({ user, reaction, message, embed, prisma, eventNumber, keyTitle }: StartEventType) {
   if (user.bot) return;
-
-  await reaction.users.remove(user.id);
-
-  //para ficar apenas uma reação no evento
-  await reaction.users.remove(user.id);
 
   //atualizando campos do embed a partir do momento que o evento começa
 
   if (embed) {
     try {
+      //para ficar apenas uma reação no evento
+      await reaction.users.remove(user.id);
+
       const event = await prisma.event.findFirst({
         where: {
           eventName: keyTitle,
@@ -62,14 +51,15 @@ export async function StartEvent({
 
       const updatedEmbed = new EmbedBuilder()
         .setTitle(`Evento ${eventNumber} Criado por ${user.username} - Iniciado!`)
+        .setDescription(embed.description)
         .addFields(embed.fields)
         .setColor("Green");
 
       await message.edit({ embeds: [updatedEmbed] });
 
-      console.log(`${keyTitle} iniciado! na guild ${message.guild?.name}`);
+      console.log(`[${keyTitle}] ${user.username} (${user.id}) iniciou o evento em ${reaction.message.guild?.name}`);
     } catch (error) {
-      console.error("Error ao inserir o evento no banco de dados", error);
+      console.error(`Error ao inserir ${keyTitle} no banco de dados`, error);
     }
   }
 }

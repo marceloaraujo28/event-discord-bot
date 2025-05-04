@@ -25,6 +25,7 @@ import { Admin } from "./commands/Admin";
 import { Event } from "./commands/Event";
 import { Global } from "./commands/Global";
 import "./data/itemsLoader";
+import { isInCooldown, setCooldown } from "./utils/cooldown";
 
 const client = new Client({
   intents: [
@@ -33,6 +34,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -208,9 +210,52 @@ client.on(
       }
     }
 
+    if (user.partial) {
+      try {
+        user = await user.fetch();
+      } catch (error) {
+        console.error("Erro ao buscar usuário parcial", error);
+        return;
+      }
+    }
+
     if (user.bot) return;
 
     const message = reaction.message;
+
+    if (!message) {
+      console.warn("Mensagem não encontrada na reação.");
+
+      const channel = reaction.message?.channel;
+
+      if ("send" in channel && typeof channel.send === "function") {
+        try {
+          await channel.send(`${user}, reação não processada porque a mensagem original foi apagada.`);
+        } catch (err) {
+          console.warn("Erro ao enviar mensagem no canal:", err);
+        }
+      }
+
+      return;
+    }
+
+    //verificação de tempo de reação
+    if (isInCooldown(user.id)) {
+      await reaction.users.remove(user.id);
+      const channel = reaction.message.channel;
+      if ("send" in channel && typeof channel.send === "function") {
+        try {
+          const msg = await channel.send(`${user}, aguarde 2 segundos antes de reagir novamente.`);
+          setTimeout(() => msg.delete().catch(() => {}), 3000);
+        } catch (err) {
+          console.warn("Erro ao enviar mensagem de cooldown:", err);
+        }
+      }
+      return;
+    }
+
+    setCooldown(user.id);
+
     const embed = message.embeds[0];
 
     if (!embed) return;

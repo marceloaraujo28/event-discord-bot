@@ -163,7 +163,6 @@ export async function FinishedEvent({ prisma, keyTitle, message, embed }: Finish
             return field;
           })
       )
-      .setDescription(embed.description)
       .setColor("DarkButNotBlack");
 
     const newActionEmbed = new EmbedBuilder();
