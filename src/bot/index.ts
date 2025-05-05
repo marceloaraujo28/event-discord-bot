@@ -248,6 +248,8 @@ client.on(
       return;
     }
 
+    if (message.author?.id !== client.user?.id) return;
+
     //verificação de tempo de reação
     if (isInCooldown(user.id)) {
       await reaction.users.remove(user.id);
