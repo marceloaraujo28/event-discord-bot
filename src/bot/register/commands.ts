@@ -1467,5 +1467,45 @@ export const commands = [
           { name: "Lymhurst", value: "1002" },
           { name: "Martlock", value: "3008" }
         )
+    )
+    .addStringOption((option) =>
+      option
+        .setName("servidor")
+        .setNameLocalizations({
+          "en-US": "server",
+          de: "server",
+          fr: "serveur",
+          ru: "server",
+          pl: "serwer",
+          "es-ES": "servidor",
+          it: "server",
+          "zh-CN": "fuwuqi",
+          ko: "seobeo",
+          ja: "saba",
+          "zh-TW": "fuwuqi",
+          id: "server",
+          tr: "sunucu",
+        })
+        .setDescription("Nome do servidor do jogo")
+        .setDescriptionLocalizations({
+          "en-US": "Select the game server",
+          de: "Wähle den Spielserver",
+          fr: "Sélectionnez le serveur du jeu",
+          ru: "Выберите игровой сервер",
+          pl: "Wybierz serwer gry",
+          "es-ES": "Selecciona el servidor del juego",
+          it: "Seleziona il server di gioco",
+          "zh-CN": "选择游戏服务器",
+          ko: "게임 서버를 선택하세요",
+          ja: "ゲームサーバーを選択してください",
+          "zh-TW": "選擇遊戲伺服器",
+          id: "Pilih server game",
+          tr: "Oyun sunucusunu seçin",
+        })
+        .setChoices(
+          { name: "Americas (West)", value: "west" },
+          { name: "Asia (East)", value: "east" },
+          { name: "Europe", value: "europe" }
+        )
     ),
 ];
