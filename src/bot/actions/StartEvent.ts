@@ -1,8 +1,21 @@
 import { EmbedBuilder } from "discord.js";
 import { StartEventType } from "./types";
+import { useT } from "../utils/useT";
 
-export async function StartEvent({ user, reaction, message, embed, prisma, eventNumber, keyTitle }: StartEventType) {
+export async function StartEvent({
+  user,
+  reaction,
+  message,
+  embed,
+  prisma,
+  eventNumber,
+  keyTitle,
+  guildData,
+}: StartEventType) {
   if (user.bot) return;
+
+  const language = guildData.language;
+  const t = useT(language);
 
   //atualizando campos do embed a partir do momento que o evento começa
 
@@ -50,7 +63,12 @@ export async function StartEvent({ user, reaction, message, embed, prisma, event
       ]);
 
       const updatedEmbed = new EmbedBuilder()
-        .setTitle(`Evento ${eventNumber} Criado por ${user.username} - Iniciado!`)
+        .setTitle(
+          t("startEvent.embed.title", {
+            eventNumber,
+            userName: user.username,
+          })
+        )
         .setDescription(embed.description)
         .addFields(embed.fields)
         .setColor("Green");
@@ -60,6 +78,7 @@ export async function StartEvent({ user, reaction, message, embed, prisma, event
       console.log(`[${keyTitle}] ${user.username} (${user.id}) iniciou o evento em ${reaction.message.guild?.name}`);
     } catch (error) {
       console.error(`Error ao inserir ${keyTitle} no banco de dados`, error);
+      return;
     }
   }
 }
