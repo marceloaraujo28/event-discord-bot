@@ -1,3 +1,4 @@
+import { useT } from "../utils/useT";
 import { ConfiscateBalance } from "./AdminCommands/ConfiscateBalance";
 import { GuildDeposit } from "./AdminCommands/GuildDeposit";
 import { PayMember } from "./AdminCommands/PayMember";
@@ -31,7 +32,8 @@ export async function Admin({ commandName, interaction, prisma }: AdminType) {
   });
 
   if (!guildData) {
-    interaction.reply("Erro ao buscar dados da guild no banco");
+    const b = useT(interaction.locale);
+    interaction.reply(b("admin.noGuild"));
     return true;
   }
 
