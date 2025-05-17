@@ -81,7 +81,10 @@ export async function EventDeposit({ interaction, prisma, event, guildData }: Ev
               valueDistribuido: valueDistribuidoRounded.toLocaleString("en-US"),
             })
           )
-          .setColor("Gold"),
+          .setColor("Gold")
+          .setFooter({
+            text: `ID:${event.eventName} v: ${depositValueFormatted.toLocaleString("en-US")}`,
+          }),
       ],
     });
 
