@@ -156,6 +156,9 @@ const ptBR = {
       catchError: "Erro ao realizar o depósito, entre em contato com o suporte",
     },
   },
+  admin: {
+    noGuild: "Dados da guild não encontrados, use /setup ou entre em contato com o suporte",
+  },
   updateParticipation: {
     noMessage: "Mensagens do canal do evento foram excluídas",
     noEmbed: "Evento não encontrado na sala",
@@ -163,6 +166,169 @@ const ptBR = {
     successUpdateParticipation:
       "<@{{interactionUserId}}> atualizou a participação do usuário <@{{userId}}> para {{updatedPercentage}}%",
     catchError: "Erro ao atualizar a participação do usuário, entre em contato com o suporte",
+  },
+  balances: {
+    userNotFound: "A guild ainda não possui saldos a serem exibidos",
+    noBalances: "`Nenhum saldo encontrado`",
+    embed: {
+      title: "SALDO ATUAL DOS JOGADORES",
+      fieldName: "Nome",
+      fieldBalance: "Saldo",
+    },
+    catchError: "Erro ao buscar saldos dos jogadores, entre em contato com o suporte",
+  },
+  guildBalance: {
+    guildNotFound: "Guild não encontrada no banco de dados",
+    guildBalance: "O saldo da guild é de: `{{currentBalance}}`",
+    catchError: "Erro ao buscar o saldo da guild, entre em contato com o suporte",
+  },
+  myBalance: {
+    userNotFound: "<@{{userId}}> não foram encontrados dados seus na base de dados",
+    memberBalance: "<@{{userId}}> seu saldo atual é de: `{{currentBalance}}`",
+    catchError: "Erro no banco ao tentar consultar seu saldo, entre em contato com o suporte",
+  },
+  transferBalance: {
+    invalidValue: "Campo em branco, Por favor digite um número",
+    invalidValue2: "Entrada inválida. Por favor, insira um número válido ex: 1,000,000",
+    senderNotFound: "Remetente não encontrado na base de dados",
+    insufficientBalance: "Seu saldo é insuficiente para realizar a transferência",
+    transferError: "Erro ao tentar realizar a transferência",
+    transferSuccess: "Tranferência de `{{value}}` pratas realizada com sucesso para o jogador <@{{userId}}>",
+    catchError: "Erro ao realizar a transferência, entre em contato com o suporte",
+  },
+  memberBalance: {
+    userNotFound: "Usuário não encontrado na base de dados",
+    balance: "o saldo <@{{userId}}> é de: `{{currentBalance}}` pratas",
+    catchError: "Erro no banco ao tentar consultar o saldo do jogador, entre em contato com o suporte",
+  },
+  help: {
+    title: "📜 Lista de Comandos",
+    description:
+      "Aqui estão todos os comandos disponíveis do bot, organizados para facilitar seu uso.\n\n⚠️ **Atenção:** Não exclua nenhuma sala criada pelo bot! Caso isso aconteça, será necessário reconfigurá-lo para evitar erros.\n\n",
+    field1name: "\uD83D\uDCB0 Preços Mercado\n",
+    field1value:
+      "`/preco` - Consulta o preço de um item no mercado. (tier,cidade e server são opcionais).\nEx: `/preco machado de guerra`, ou \n`/preco machado de guerra [tier ex: 4.3] [cidade] [server]`",
+    field2name: "\u2728 Configuração Inicial Gerenciamento de Saldo",
+    field2value:
+      "`/lang` - Altera o idioma do bot.  **(Admin)**\n" +
+      "`/setup` - Configura automaticamente as salas e permissões do bot. **(Admin)**\n" +
+      "`/meu-saldo` - Consulta seu saldo atual.\n" +
+      "`/saldos` - Exibe o saldo de todos os membros da guild.\n" +
+      "`/saldo-membro` - Consulta o saldo de um membro específico.\n" +
+      "`/saldo-guild` - Verifica o saldo da guild.",
+    field3name: "\uD83D\uDCB3 Transações Financeiras",
+    field3value:
+      "`/depositar-guild` - Adiciona saldo ao caixa da guild. **(Admin)**\n" +
+      "`/sacar-guild` - Retira saldo do caixa da guild. **(Admin)**\n" +
+      "`/pagar-membro` - Envia um pagamento para um membro utilizando o saldo da guild. **(Admin)**\n" +
+      "`/confiscar-saldo` - Remove o saldo de um membro e adiciona à guild. **(Admin)**\n" +
+      "`/transferir-saldo` - Transfere saldo da sua conta para outro membro.",
+    field4name: "\uD83C\uDF1F Eventos e Participação",
+    field4value:
+      "`/vendedor` - Adiciona um vendedor ao evento.\n" +
+      "`/simular-evento` - Simula a divisão dos valores entre os participantes.\n" +
+      "`/atualizar-participacao` - Modifica a porcentagem de participação de um jogador.\n" +
+      "`/atualizar-taxa-vendedor` - Ajusta a taxa paga aos vendedores. **(Admin)**\n" +
+      "`/atualizar-taxa-guild` - Ajusta a taxa paga à guild. **(Admin)**\n" +
+      "`/depositar-evento` - Deposita o valor do evento no saldo dos participantes.",
+    field5name: "\u2753 Ajuda",
+    field5value: "\n\nSuporte: \n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
+    footer: "Use os comandos corretamente para garantir a melhor experiência!",
+  },
+  price: {
+    noItem: "Informe o nome de um item",
+    invalidTier: "Tier inválido. Use o formato correto, exemplo: `4.0`, `5.3`, `6.1`.",
+    itemNotFound: "Item não encontrado",
+    itemNotFound2: "Não há dados disponíveis para este item",
+    qualities: {
+      normal: "Normal",
+      good: "Bom",
+      outstanding: "Excepcional",
+      excellent: "Excelente",
+      masterpiece: "Obra-prima",
+    },
+    embed: {
+      sellOrders: "Ordens de VENDA",
+      city: "Cidade (Qualidade)",
+      price: "Preço",
+      lastUpdate: "Última atualização",
+      buyOrders: "Ordens de COMPRA",
+      footer: "\n\n❗ Digite o nome do item no idioma do seu Discord ❗\n\n/help para mais informações",
+    },
+    catchError: "Erro ao buscar dados, entre em contato com o suporte",
+  },
+  deleteEvent: {
+    canceledMessage: "<@{{userId}}> cancelou o evento.",
+  },
+  finishedEvent: {
+    finishedMessage: "Canal de texto criado para o {{channelName}} finalizado",
+    embed: {
+      title: "{{eventTitle}} - Criado por {{username}}",
+      participants: "Participantes",
+      seller: "Vendedor",
+      sellerValue: "Nenhum vendedor",
+      totalParticipants: "Total Participantes",
+      duration: "Duração",
+    },
+    informationEmbed: {
+      title: "Oque fazer agora?",
+      sellerTitle: "Vincule um vendedor para gerenciar o evento",
+      sellerValue: "\n\n`/vendedor @membro`",
+      simulateTitle: "Para simular o valor que cada participante recebera,utilize o comando:",
+      simulateValue: "\n`/simular-evento 1,000,000`",
+      updateTitle:
+        "As simulações podem ser feitas várias vezes.\n\nPara ajustar a participação de um membro específico, utilize o comando:\n",
+      updateValue: "\n`/atualizar-participacao @membro 100`",
+    },
+  },
+  participateEvent: {
+    messageChannel: "<@{{userId}}> você precisa estar em um canal de voz para poder participar de um evento",
+    catchError: "Erro ao adicionar o participante {{userMention}} ao evento",
+  },
+  startEvent: {
+    embed: {
+      title: "Event {{eventNumber}} Criado por {{userName}} - Iniciado",
+    },
+  },
+  voiceUpdate: {
+    noPlayer: "Nenhum participante",
+  },
+  openEvent: {
+    notInChannel: "<@{{interactionUser}}> você precisa estar em um canal de voz para poder iniciar um evento",
+    embed: {
+      title: "Event {{eventNumber}} Criado por {{userName}} - Não iniciado",
+      description: "Entre no evento reagindo ao emoji 🚀 (Necessário estar em um canal de voz no Discord)",
+      author: "Criador",
+      totalPlayers: "Total Participantes",
+      participants: "Participantes",
+      instructionsTitle: "Passos para o Criador e Administrador do evento",
+      instructionsValue:
+        "🏁-Iniciar o Evento (Começa a contabilizar o tempo e a participação dos jogadores)\n\n⏸Finalizar o evento (Finaliza e mostra a porcentagem da participação dos jogadores)\n\n🛑Cancelar o evento (Exclui o evento e salas criadas por ele - Apenas em eventos não iniciados)",
+    },
+    eventCreated: "Event {{eventNumber}} criado com sucesso pelo jogador <@{{userId}}>",
+    errorCreatedEvent: "Erro ao criar o evento",
+    errorReply: "Erro ao criar evento",
+  },
+  index: {
+    adminOnly: "Apenas um **Administrador** pode usar esse comando",
+    noGuildInteraction: "Dados da guild não encontrados, use /setup ou entre em contato com o suporte",
+    eventClosed: "Evento já fechado, não é possivel mais usar comandos",
+    sellerOnly: "Apenas um Manager ou Administrador pode adicionar um vendedor ao evento",
+    noSeller: "Adicione um vendedor antes de usar esse comando",
+    noPermission: "esse comando só pode ser usado pelo vendedor",
+    onlyEventChannel: "esse comando só pode ser usado em um canal de eventos",
+    commandCatchError: "Ocorreu um erro ao processar o comando",
+    createEventErro: "Erro ao tentar criar evento",
+    notProcessedReaction: "{{user}} reação não processada porque a mensagem original foi apagada",
+    waitSendMessage: "{{user}} aguarde 2 segundos antes de reagir novamente",
+    eventUnidentified: "Não foi possível identificar o evento",
+    depositUnidentified: "Não foi possível identificar o valor do depósito",
+    eventNotFound: "Evento não encontrado",
+    confirmedDepositEmbed: {
+      title: "Depósito do {{eventName}} Confirmado",
+      description:
+        "<@{{userId}}> confirmou um depósito no valor de **{{totalValue}}** pratas, valor já depositado no saldo dos participantes do **${eventName}**",
+    },
   },
 };
 

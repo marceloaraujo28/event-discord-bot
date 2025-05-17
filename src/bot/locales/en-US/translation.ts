@@ -153,6 +153,9 @@ const enUS = {
       catchError: "Error processing the deposit, please contact support",
     },
   },
+  admin: {
+    noGuild: "Guild data not found. Use /setup or contact support",
+  },
   updateParticipation: {
     noMessage: "Event channel messages have been deleted",
     noEmbed: "Event not found in the room",
@@ -160,6 +163,169 @@ const enUS = {
     successUpdateParticipation:
       "<@{{interactionUserId}}> updated the participation of user <@{{userId}}> to {{updatedPercentage}}%",
     catchError: "Error updating the user's participation, please contact support",
+  },
+  balances: {
+    userNotFound: "The guild does not have any balances to display yet",
+    noBalances: "`No balances found`",
+    embed: {
+      title: "CURRENT PLAYER BALANCES",
+      fieldName: "Name",
+      fieldBalance: "Balance",
+    },
+    catchError: "Error fetching player balances, please contact support",
+  },
+  guildBalance: {
+    guildNotFound: "Guild not found in the database",
+    guildBalance: "The guild's balance is: `{{currentBalance}}`",
+    catchError: "Error fetching the guild's balance, please contact support",
+  },
+  myBalance: {
+    userNotFound: "<@{{userId}}> no data found for you in the database",
+    memberBalance: "<@{{userId}}> your current balance is: `{{currentBalance}}`",
+    catchError: "Error querying your balance in the database, please contact support",
+  },
+  transferBalance: {
+    invalidValue: "Field is blank, please enter a number",
+    invalidValue2: "Invalid input. Please enter a valid number, example: 1,000,000",
+    senderNotFound: "Sender not found in the database",
+    insufficientBalance: "Your balance is insufficient to complete the transfer",
+    transferError: "Error attempting to process the transfer",
+    transferSuccess: "Transfer of `{{value}}` silver successfully completed to player <@{{userId}}>",
+    catchError: "Error processing the transfer, please contact support",
+  },
+  memberBalance: {
+    userNotFound: "User not found in the database",
+    balance: "The balance of <@{{userId}}> is: `{{currentBalance}}` silver",
+    catchError: "Error querying the player's balance in the database, please contact support",
+  },
+  help: {
+    title: "📜 Command List",
+    description:
+      "Here are all the commands available for the bot, organized for easy use.\n\n⚠️ **Attention:** Do not delete any room created by the bot! If this happens, reconfiguration will be required to avoid errors.\n\n",
+    field1name: "\uD83D\uDCB0 Market Prices\n",
+    field1value:
+      "`/price` - Checks the price of an item in the market. (tier, city, and server are optional).\nEx: `/price greataxe`, or \n`/price greataxe [tier example: 4.3] [city] [server]`",
+    field2name: "\u2728 Initial Setup for Balance Management",
+    field2value:
+      "`/lang` - Changes the bot's language.  **(Admin)**\n" +
+      "`/setup` - Automatically configures the bot's rooms and permissions. **(Admin)**\n" +
+      "`/my-balance` - Checks your current balance.\n" +
+      "`/balances` - Shows the balance of all guild members.\n" +
+      "`/member-balance` - Checks the balance of a specific member.\n" +
+      "`/guild-balance` - Verifies the guild's balance.",
+    field3name: "\uD83D\uDCB3 Financial Transactions",
+    field3value:
+      "`/deposit-guild` - Adds balance to the guild's treasury. **(Admin)**\n" +
+      "`/withdraw-guild` - Withdraws balance from the guild's treasury. **(Admin)**\n" +
+      "`/pay-member` - Sends a payment to a member using the guild's balance. **(Admin)**\n" +
+      "`/confiscate-balance` - Removes a member's balance and adds it to the guild. **(Admin)**\n" +
+      "`/transfer-balance` - Transfers balance from your account to another member.",
+    field4name: "\uD83C\uDF1F Events and Participation",
+    field4value:
+      "`/seller` - Adds a seller to the event.\n" +
+      "`/simulate-event` - Simulates the distribution of values among participants.\n" +
+      "`/update-participation` - Modifies a player's participation percentage.\n" +
+      "`/update-seller-fee` - Adjusts the fee paid to sellers. **(Admin)**\n" +
+      "`/update-guild-fee` - Adjusts the fee paid to the guild. **(Admin)**\n" +
+      "`/deposit-event` - Deposits the event funds into the participants' balances.",
+    field5name: "\u2753 Help",
+    field5value: "\n\nSupport: \n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
+    footer: "Use the commands correctly to ensure the best experience!",
+  },
+  price: {
+    noItem: "Please enter the name of an item",
+    invalidTier: "Invalid tier. Use the correct format, example: `4.0`, `5.3`, `6.1`.",
+    itemNotFound: "Item not found",
+    itemNotFound2: "No data available for this item",
+    qualities: {
+      normal: "Normal",
+      good: "Good",
+      outstanding: "Outstanding",
+      excellent: "Excellent",
+      masterpiece: "Masterpiece",
+    },
+    embed: {
+      sellOrders: "SELL Orders",
+      city: "City (Quality)",
+      price: "Price",
+      lastUpdate: "Last update",
+      buyOrders: "BUY Orders",
+      footer: "\n\n❗ Make sure to type the item name in the same language as your Discord ❗\n\nNeed help? Use /help",
+    },
+    catchError: "Error retrieving data, please contact support",
+  },
+  deleteEvent: {
+    canceledMessage: "<@{{userId}}> has canceled the event.",
+  },
+  finishedEvent: {
+    finishedMessage: "Text channel created for {{channelName}} has been finalized",
+    embed: {
+      title: "{{eventTitle}} - Created by {{username}}",
+      participants: "Players",
+      seller: "Seller",
+      sellerValue: "No seller",
+      totalParticipants: "Total Players",
+      duration: "Duration",
+    },
+    informationEmbed: {
+      title: "What to do now?",
+      sellerTitle: "Link a seller to manage the event",
+      sellerValue: "\n\n`/seller @member`",
+      simulateTitle: "To simulate the amount each participant will receive, use the command:",
+      simulateValue: "\n`/simulate-event 1,000,000`",
+      updateTitle:
+        "Simulations can be done multiple times.\n\nTo adjust the participation of a specific member, use the command:\n",
+      updateValue: "\n`/update-participation @member 100`",
+    },
+  },
+  participateEvent: {
+    messageChannel: "<@{{userId}}> you need to be in a voice channel to participate in an event",
+    catchError: "Error adding participant {{userMention}} to the event",
+  },
+  startEvent: {
+    embed: {
+      title: "Event {{eventNumber}} Created by {{userName}} - Started",
+    },
+  },
+  voiceUpdate: {
+    noPlayer: "No Player",
+  },
+  openEvent: {
+    notInChannel: "<@{{interactionUser}}> you need to be in a voice channel to start an event",
+    embed: {
+      title: "Event {{eventNumber}} Created by {{userName}} - Not Started",
+      description: "Join the event by reacting with the 🚀 emoji (You must be in a Discord voice channel)",
+      author: "Creator",
+      totalPlayers: "Total Participants",
+      participants: "Participants",
+      instructionsTitle: "Steps for the Event Creator and Administrator",
+      instructionsValue:
+        "🏁-Start the Event (Begins tracking time and player participation)\n\n⏸End the Event (Ends and shows the percentage of player participation)\n\n🛑Cancel the Event (Deletes the event and its created channels - Only for non-started events)",
+    },
+    eventCreated: "Event {{eventNumber}} successfully created by player <@{{userId}}>",
+    errorCreatedEvent: "Error creating the event",
+    errorReply: "Error creating event",
+  },
+  index: {
+    adminOnly: "Only an **Administrator** can use this command",
+    noGuildInteraction: "Guild data not found. Use /setup or contact support",
+    eventClosed: "Event already closed, commands can no longer be used",
+    sellerOnly: "Only a Manager or Administrator can add a seller to the event",
+    noSeller: "Please add a seller before using this command",
+    noPermission: "This command can only be used by the assigned seller",
+    onlyEventChannel: "This command can only be used in an event channel",
+    commandCatchError: "An error occurred while processing the command",
+    createEventErro: "Error while trying to create event",
+    notProcessedReaction: "{{user}} reaction not processed because the original message was deleted",
+    waitSendMessage: "{{user}} please wait 2 seconds before reacting again",
+    eventUnidentified: "Could not identify the event",
+    depositUnidentified: "Could not identify the deposit amount",
+    eventNotFound: "Event not found",
+    confirmedDepositEmbed: {
+      title: "{{eventName}} Deposit Confirmed",
+      description:
+        "<@{{userId}}> confirmed a deposit of **{{totalValue}}** silver, amount already deposited into the participants' balance of **${eventName}**",
+    },
   },
 };
 
