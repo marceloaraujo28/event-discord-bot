@@ -1,7 +1,8 @@
 import { EmbedBuilder, Guild } from "discord.js";
 import { VoiceUpdateType } from "./types";
+import { useT } from "../utils/useT";
 
-export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateType) {
+export async function VoiceUpdate({ newState, oldState, prisma, guildData }: VoiceUpdateType) {
   if (!oldState.channel) {
     return;
   }
@@ -12,27 +13,31 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
     return; //usuário não saiu de uma sala
   }
 
-  const event = await prisma.event.findFirst({
-    where: {
-      channelID: oldState.channelId,
-    },
-  });
-
-  if (!event) {
-    return;
-  }
-
   const userId = oldState?.member?.user.id;
 
   if (!userId) {
     return;
   }
 
+  const language = guildData.language;
+  const t = useT(language);
+
   const userTag = `<@${userId}>`;
 
   let participant;
+  let event;
 
   try {
+    event = await prisma.event.findFirst({
+      where: {
+        channelID: oldState.channelId,
+      },
+    });
+
+    if (!event) {
+      return;
+    }
+
     participant = await prisma.participant.findUnique({
       where: {
         userId_eventId: {
@@ -46,32 +51,7 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
       return;
     }
   } catch (error) {
-    console.error(`Erro ao buscar participante ${userTag} no evento ${event.eventName}`, error);
-    return;
-  }
-
-  const guildData = await prisma.guilds.findUnique({
-    where: {
-      guildID: oldState.guild?.id,
-    },
-  });
-
-  // Busca o canal de participação configurado no banco de dados
-  const participationChannelId = guildData?.participationChannelID;
-  if (!participationChannelId) {
-    console.error(`ID do canal de participação não configurado. execute novamente o /setup`);
-    return;
-  }
-
-  // Busca o canal de participação no servidor
-  const participationChannel = await oldState.guild.channels.fetch(participationChannelId);
-  if (!participationChannel?.isTextBased()) {
-    console.error(`Canal de texto do evento não encontrado: ${participationChannelId}. execute novamente o /setup`);
-    return;
-  }
-
-  if (!event.messageID) {
-    console.error(`ID da mensagem do evento não encontrado`, oldState.guild.id);
+    console.error(`Erro ao buscar participante ${userTag} no evento ${event?.eventName}`, error);
     return;
   }
 
@@ -79,6 +59,24 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
   let message;
 
   try {
+    // Busca o canal de participação configurado no banco de dados
+    const participationChannelId = guildData?.participationChannelID;
+    if (!participationChannelId) {
+      console.error(`ID do canal de participação não configurado. ${event.eventName}${oldState.guild.name}`);
+      return;
+    }
+
+    // Busca o canal de participação no servidor
+    const participationChannel = await oldState.guild.channels.fetch(participationChannelId);
+    if (!participationChannel?.isTextBased()) {
+      console.error(`Canal de texto do ${event.eventName} não encontrado: ${participationChannelId}`);
+      return;
+    }
+
+    if (!event.messageID) {
+      console.error(`ID da mensagem do evento não encontrado`, oldState.guild.id);
+      return;
+    }
     message = await participationChannel.messages.fetch(event.messageID);
   } catch (error) {
     console.error(`Mensagem do evento ${event.messageID} não encontrada ou já deletada`, error);
@@ -113,7 +111,8 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
 
     //remover da lista de participantes no embed
 
-    const participants = embed.fields.find((text) => text.name === "Participantes")?.value || "Nenhum participant";
+    const embedFields = [...embed.fields];
+    const participants = embedFields[3].value;
 
     const updateParticipants = participants
       .split("\n")
@@ -122,27 +121,21 @@ export async function VoiceUpdate({ newState, oldState, prisma }: VoiceUpdateTyp
 
     const participantCount = updateParticipants.split("\n").filter((line) => line.trim() !== "").length;
 
+    //atualizar participantes
+    embedFields[3] = {
+      ...embedFields[3],
+      value: updateParticipants.length > 0 ? updateParticipants : t("voiceUpdate.noPlayer"),
+    };
+
+    //atualizar quantidade participantes
+    embedFields[2] = {
+      ...embedFields[2],
+      value: `${participantCount}`,
+    };
+
     const updatedEmbed = new EmbedBuilder();
     updatedEmbed.setTitle(embed.title);
-    updatedEmbed.addFields(
-      embed.fields.map((field) => {
-        if (field.name === "Participantes") {
-          return {
-            ...field,
-            value: updateParticipants.length > 0 ? updateParticipants : "Nenhum participante",
-          };
-        }
-
-        if (field.name === "Qnt Participantes") {
-          return {
-            ...field,
-            value: `${participantCount}`,
-          };
-        }
-
-        return field;
-      })
-    );
+    updatedEmbed.addFields(embedFields);
     updatedEmbed.setDescription(embed.description);
     updatedEmbed.setColor(embed.color);
 
