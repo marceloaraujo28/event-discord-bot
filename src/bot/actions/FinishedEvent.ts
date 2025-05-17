@@ -1,7 +1,19 @@
 import { ChannelType, EmbedBuilder } from "discord.js";
 import { FinishedEventType } from "./types";
+import { useT } from "../utils/useT";
 
-export async function FinishedEvent({ prisma, keyTitle, message, embed, reaction, user }: FinishedEventType) {
+export async function FinishedEvent({
+  prisma,
+  keyTitle,
+  message,
+  embed,
+  reaction,
+  user,
+  guildData,
+}: FinishedEventType) {
+  const language = guildData.language;
+  const t = useT(language);
+
   try {
     await reaction.users.remove(user.id);
 
@@ -11,12 +23,6 @@ export async function FinishedEvent({ prisma, keyTitle, message, embed, reaction
       },
       include: {
         Participant: true,
-      },
-    });
-
-    const guildData = await prisma.guilds.findUnique({
-      where: {
-        guildID: message?.guild?.id,
       },
     });
 
@@ -123,63 +129,65 @@ export async function FinishedEvent({ prisma, keyTitle, message, embed, reaction
 
     await Promise.all([message.reactions.cache.get("⏸")?.remove(), message.reactions.cache.get("🚀")?.remove()]);
 
-    const creator = await message.client.users.fetch(event.creatorId);
+    const creatorName = embed.fields[1].value;
+
+    const embedValues = [...embed.fields];
+
+    //removendo o passo a passo do embed
+    embedValues.splice(4, 1);
+
+    //participantes
+    embedValues[3] = {
+      ...embedValues[3],
+      name: t("finishedEvent.embed.participants"),
+      value: participationList,
+    };
+
+    //vendedor
+    embedValues[0] = {
+      ...embedValues[0],
+      name: t("finishedEvent.embed.seller"),
+      value: t("finishedEvent.embed.sellerValue"),
+    };
+
+    //total participantes
+    embedValues[2] = {
+      ...embedValues[2],
+      name: t("finishedEvent.embed.totalParticipants"),
+      value: `${totalParticipantes}`,
+    };
+
+    //duração
+    embedValues[1] = {
+      ...embedValues[1],
+      name: t("finishedEvent.embed.duration"),
+      value: `${durationInHours}h ${durationInMinutes}m`,
+    };
+
     const updatedEmbed = new EmbedBuilder()
-      .setTitle(`${keyTitle} - Criado por ${creator.username}`)
-      .addFields(
-        embed.fields
-          .filter((field) => field.name !== "Passos para o Criador e Administrador do evento")
-          .map((field) => {
-            if (field.name === "Participantes") {
-              return {
-                ...field,
-                value: participationList,
-              };
-            }
-
-            if (field.name === "ID do Evento") {
-              return {
-                ...field,
-                name: "Vendedor",
-                value: "Nenhum vendedor",
-              };
-            }
-
-            if (field.name === "Criador") {
-              return {
-                ...field,
-                name: "Total Participantes",
-                value: `${totalParticipantes}`,
-              };
-            }
-
-            if (field.name === "Qnt Participantes") {
-              return {
-                ...field,
-                name: "Duração",
-                value: `${durationInHours}h ${durationInMinutes}m`,
-              };
-            }
-
-            return field;
-          })
+      .setTitle(
+        t("finishedEvent.embed.title", {
+          eventTitle: keyTitle,
+          username: creatorName,
+        })
       )
+      .addFields(embedValues)
       .setColor("DarkButNotBlack");
 
     const newActionEmbed = new EmbedBuilder();
-    newActionEmbed.setTitle("Oque fazer agora?");
+    newActionEmbed.setTitle(t("finishedEvent.informationEmbed.title"));
     newActionEmbed.setFields(
       {
-        name: "Vincule um vendedor para gerenciar o evento",
-        value: `\n\n\`/vendedor @membro\``,
+        name: t("finishedEvent.informationEmbed.sellerTitle"),
+        value: t("finishedEvent.informationEmbed.sellerValue"),
       },
       {
-        name: "Para simular o valor que cada participante recebera,utilize o comando:",
-        value: `\n\`/simular-evento 1,000,000\``,
+        name: t("finishedEvent.informationEmbed.simulateTitle"),
+        value: t("finishedEvent.informationEmbed.simulateValue"),
       },
       {
-        name: "As simulações podem ser feitas várias vezes.\n\nPara ajustar a participação de um membro específico, utilize o comando:\n",
-        value: `\n\`/atualizar-participacao @membro 100\``,
+        name: t("finishedEvent.informationEmbed.updateTitle"),
+        value: t("finishedEvent.informationEmbed.updateValue"),
       }
     );
     newActionEmbed.setColor("DarkButNotBlack");
@@ -204,6 +212,6 @@ export async function FinishedEvent({ prisma, keyTitle, message, embed, reaction
 
     await message.delete();
   } catch (error) {
-    console.error("Erro ao finalizar evento:", error);
+    console.error(`${user.username}, Erro ao finalizar o ${keyTitle}`, error);
   }
 }
