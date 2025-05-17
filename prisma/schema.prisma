@@ -37,6 +37,7 @@ model User {
   userId         String
   currentBalance Float         @default(0)
   totalEarned    Float         @default(0)
+  priceLanguage  String?
   guildID        String
   participants   Participant[]
   guild          Guilds        @relation(fields: [guildID], references: [guildID], onDelete: Cascade)
@@ -66,6 +67,7 @@ model Guilds {
   language               String?       @default("pt-BR")
   participationChannelID String?
   logsChannelID          String?
+  guildName              String?
   waitingVoiceChannelID  String?
   startedCategoryID      String?
   endedCategoryID        String?
