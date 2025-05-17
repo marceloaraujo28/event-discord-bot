@@ -1,11 +1,14 @@
 import { EmbedBuilder, ChannelType } from "discord.js";
 import { OpenEventType } from "./types";
-import { PrismaClient } from "@prisma/client";
 import { sendMessageChannel } from "../utils/sendMessageChannel";
 import { isInCooldown, setCooldown } from "../utils/cooldown";
+import { useT } from "../utils/useT";
 
-export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
+export const OpenEvent = async ({ interaction, guildData, prisma }: OpenEventType) => {
   const guild = interaction.guild;
+
+  const language = guildData.language;
+  const t = useT(language);
 
   if (isInCooldown(interaction.user.id)) {
     console.log(`Usuário ${interaction.user.username}:${interaction.user.id} está em cooldown.`);
@@ -14,16 +17,23 @@ export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
 
   setCooldown(interaction.user.id);
 
-  const prisma = new PrismaClient();
-  const member = await guild?.members.fetch(interaction.user.id);
+  let member;
 
-  if (!member?.voice.channel) {
-    await sendMessageChannel({
-      channelID: guildData?.logsChannelID,
-      messageChannel: `<@${interaction.user.id}> você precisa estar em um canal de voz para poder iniciar um evento!`,
-      guild,
-    });
-    return;
+  try {
+    member = await guild?.members.fetch(interaction.user.id);
+
+    if (!member?.voice.channel) {
+      await sendMessageChannel({
+        channelID: guildData?.logsChannelID,
+        messageChannel: t("openEvent.notInChannel", {
+          interactionUser: interaction.user.id,
+        }),
+        guild,
+      });
+      return;
+    }
+  } catch (error) {
+    console.error("Erro ao buscar usuário: ", error);
   }
 
   try {
@@ -48,32 +58,36 @@ export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
     // Criação do embed
 
     const embed = await new EmbedBuilder();
-    embed.setTitle(`Evento ${eventNumber} Criado por ${interaction.user.username} - Não Iniciado!`);
-    embed.setDescription(`Entre no evento reagindo com ${"🚀"} - (Necessário estar em um canal de voz no Discord)`);
+    embed.setTitle(
+      t("openEvent.embed.title", {
+        eventNumber,
+        userName: interaction.user.username,
+      })
+    );
+    embed.setDescription(t("openEvent.embed.description"));
     embed.addFields(
       {
-        name: "ID do Evento",
+        name: "ID do Event",
         value: `${updatedCounter.lastNumber}`,
         inline: true,
       },
       {
-        name: "Criador",
+        name: t("openEvent.embed.author"),
         value: `${interaction.user.username}`,
         inline: true,
       },
       {
-        name: "Qnt Participantes",
+        name: t("openEvent.embed.totalPlayers"),
         value: "1",
         inline: true,
       },
       {
-        name: "Participantes",
+        name: t("openEvent.embed.participants"),
         value: `<@${interaction.user.id}>`,
       },
       {
-        name: "Passos para o Criador e Administrador do evento",
-        value:
-          "🏁-Iniciar o Evento (Começa a contabilizar o tempo e a participação dos jogadores)\n\n⏸Finalizar o evento (Finaliza e mostra a porcentagem da participação dos jogadores)\n\n🛑Cancelar o evento (Exclui o evento e salas criadas por ele - Apenas em eventos não iniciados)",
+        name: t("openEvent.embed.instructionsTitle"),
+        value: t("openEvent.embed.instructionsValue"),
       }
     );
     embed.setColor("Blurple");
@@ -94,7 +108,7 @@ export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
       const newEvent = await prisma.event.create({
         data: {
           creatorId: interaction.user.id,
-          eventName: `Evento ${eventNumber}`,
+          eventName: `Event ${eventNumber}`,
           guildId: guild?.id ?? "",
           messageID: eventMessage.id,
           createdAt: new Date(),
@@ -135,7 +149,10 @@ export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
 
     sendMessageChannel({
       channelID: guildData?.logsChannelID,
-      messageChannel: `Evento ${eventNumber} criado com sucesso pelo jogador <@${interaction.user.id}>`,
+      messageChannel: t("openEvent.eventCreated", {
+        eventNumber,
+        userId: interaction.user.id,
+      }),
       guild,
     });
 
@@ -148,9 +165,9 @@ export const OpenEvent = async ({ interaction, guildData }: OpenEventType) => {
     console.error(`Erro ao criar o evento:`, error);
     sendMessageChannel({
       channelID: guildData?.logsChannelID,
-      messageChannel: `Erro ao criar o evento!`,
+      messageChannel: t("openEvent.errorCreatedEvent"),
       guild,
     });
-    return await interaction.reply("Erro ao criar evento!");
+    return await interaction.reply(t("openEvent.errorReply"));
   }
 };
