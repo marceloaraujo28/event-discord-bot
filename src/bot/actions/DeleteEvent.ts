@@ -1,21 +1,24 @@
 import { sendMessageChannel } from "../utils/sendMessageChannel";
+import { useT } from "../utils/useT";
 import { DeleteEventType } from "./types";
 
-export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, creatorName }: DeleteEventType) {
+export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, guildData }: DeleteEventType) {
+  const language = guildData.language;
+  const t = useT(language);
+
   try {
     await reaction.users.remove(user.id);
-
-    const guildData = await prisma.guilds.findUnique({
-      where: {
-        guildID: reaction.message?.guild?.id,
-      },
-    });
 
     const event = await prisma.event.findFirst({
       where: {
         eventName: keyTitle,
       },
     });
+
+    if (!event) {
+      console.log("Evento nao encontrado no banco de dados!");
+      return;
+    }
 
     const eventChannel = message.guild?.channels.cache.get(event?.channelID ?? "");
 
@@ -50,7 +53,9 @@ export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, c
 
     //enviar mensagem de cancelamento do evento
     await sendMessageChannel({
-      messageChannel: `<@${user.id}> cancelou o evento!`,
+      messageChannel: t("deleteEvent.canceledMessage", {
+        userId: user.id,
+      }),
       channelID: guildData?.logsChannelID,
       guild: reaction.message?.guild,
     });
@@ -58,5 +63,6 @@ export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, c
     await message.delete();
   } catch (error) {
     console.error(`Erro ao deletar o evento ${keyTitle}`);
+    return;
   }
 }
