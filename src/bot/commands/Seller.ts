@@ -1,46 +1,59 @@
 import { EmbedBuilder } from "discord.js";
 import { SellerType } from "./types";
+import { useT } from "../utils/useT";
 
-export async function Seller({ interaction, prisma, event }: SellerType) {
+export async function Seller({ interaction, prisma, event, guildData }: SellerType) {
   const membro = interaction.options.get("membro")?.user;
 
+  const language = guildData.language;
+  const t = useT(language);
+
   await interaction.deferReply();
+
+  if (event.status !== "finished") {
+    await interaction.editReply(t("seller.eventNoFinished"));
+    return;
+  }
 
   try {
     const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
 
     if (!message) {
-      await interaction.editReply("Canal do evento não existe!");
+      await interaction.editReply(t("seller.noChannel"));
       return;
     }
 
     const embed = message?.embeds[0];
 
     if (!embed) {
-      return await interaction.editReply("Evento não encontrado na sala!");
+      return await interaction.editReply(t("seller.eventNotFound"));
     }
 
     if (!membro) {
-      return await interaction.editReply(`<@${interaction.user.id}> você precisa selecionar um membro válido`);
+      return await interaction.editReply(
+        t("seller.noMember", {
+          interactionUser: interaction.user.id,
+        })
+      );
     }
 
-    const updatedFields = embed.fields.map((field) => {
-      if (field.name === "Vendedor") {
-        return {
-          ...field,
-          value: `<@${membro.id}>`,
-        };
-      }
+    const updateEmbedFields = [...embed.fields];
+    updateEmbedFields[0] = {
+      ...updateEmbedFields[0],
+      value: `<@${membro.id}>`,
+    };
 
-      return field;
-    });
-
-    const updatedEmbed = EmbedBuilder.from(embed).setFields(updatedFields);
+    const updatedEmbed = EmbedBuilder.from(embed).setFields(updateEmbedFields);
 
     const otherEmbeds = message.embeds.slice(1);
 
     await message.edit({ embeds: [updatedEmbed, ...otherEmbeds] });
-    await interaction.editReply(`<@${interaction.user.id}> vinculou <@${membro.id}> como vendedor do evento!`);
+    await interaction.editReply(
+      t("seller.sellerVinculated", {
+        memberId: membro.id,
+        interactionUser: interaction.user.id,
+      })
+    );
 
     await prisma.event.update({
       where: {
@@ -52,6 +65,6 @@ export async function Seller({ interaction, prisma, event }: SellerType) {
     });
   } catch (error) {
     console.error("Error ao buscar evento no banco de dados, guild:", interaction?.guild?.id, error);
-    return await interaction.editReply("Erro ao vincular vendedor");
+    return await interaction.editReply(t("seller.errorVinculated"));
   }
 }

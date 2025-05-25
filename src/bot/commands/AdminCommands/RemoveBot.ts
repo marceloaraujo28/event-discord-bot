@@ -79,7 +79,7 @@ export async function RemoveBot({ interaction, prisma, guildData }: RemoveBotTyp
     // Criar os botões
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setLabel("Servidor do Discord")
+        .setLabel(t("removeBot.titleLabel"))
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/AjGZbc5b2s") // Substitua pelo seu link do Discord
     );
