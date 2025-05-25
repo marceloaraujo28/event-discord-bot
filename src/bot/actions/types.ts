@@ -8,7 +8,7 @@ import {
   User,
   VoiceState,
 } from "discord.js";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Guilds, Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 
 export type EventBaseType = {
@@ -21,16 +21,17 @@ export type EventBaseType = {
   eventNumber: string;
 };
 
-export type ParticipateEventType = EventBaseType;
+export type ParticipateEventType = EventBaseType & { guildData: Guilds };
 
 export type StartEventType = {
-  creatorName?: string | null;
+  guildData: Guilds;
 } & EventBaseType;
 
-export type FinishedEventType = Omit<EventBaseType, "eventNumber">;
+export type FinishedEventType = Omit<EventBaseType, "eventNumber"> & { guildData: Guilds };
 export type VoiceUpdateType = {
   oldState: VoiceState;
   newState: VoiceState;
+  guildData: Guilds;
 } & Pick<EventBaseType, "prisma">;
 
-export type DeleteEventType = { creatorName?: string | null } & Omit<EventBaseType, "eventNumber" | "embed">;
+export type DeleteEventType = { guildData: Guilds } & Omit<EventBaseType, "eventNumber" | "embed">;

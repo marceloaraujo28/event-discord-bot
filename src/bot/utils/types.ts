@@ -1,7 +1,7 @@
-import { Guild } from "discord.js";
+import { Guild, MessageCreateOptions, MessagePayload } from "discord.js";
 
 export type sendMessageTypes = {
   guild?: Guild | null;
-  messageChannel: string;
+  messageChannel: string | MessagePayload | MessageCreateOptions;
   channelID?: string | null;
 };

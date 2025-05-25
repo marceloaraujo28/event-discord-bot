@@ -1,7 +1,11 @@
+import { useT } from "../../utils/useT";
 import { MyBalanceType } from "../types";
 
-export async function MyBalance({ interaction, prisma, member }: MyBalanceType) {
+export async function MyBalance({ interaction, prisma, member, guildData }: MyBalanceType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+  const t = useT(language);
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -13,16 +17,21 @@ export async function MyBalance({ interaction, prisma, member }: MyBalanceType) 
     });
 
     if (!user) {
-      await interaction.editReply(`<@${member?.id}> nenhum dado seu foi encontrado na base de dados!`);
+      await interaction.editReply(t("myBalance.userNotFound", { userId: member?.id }));
       return;
     }
 
     const currentBalance = user.currentBalance;
 
-    await interaction.editReply(`<@${member?.id}> seu saldo atual é de: \`${currentBalance.toLocaleString("en-US")}\``);
+    await interaction.editReply(
+      t("myBalance.memberBalance", {
+        userId: member?.id,
+        currentBalance: currentBalance.toLocaleString("en-US"),
+      })
+    );
     return;
   } catch (error) {
     console.error("Erro ao tentar verificar saldo do próprio jogador", error);
-    return await interaction.editReply("Erro no banco ao tentar consultar seu saldo!");
+    return await interaction.editReply(t("myBalance.catchError"));
   }
 }

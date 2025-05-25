@@ -17,6 +17,7 @@ model Event {
   endTime               BigInt?
   channelID             String?
   messageID             String?
+  simulatedMessageID    String?
   seller                String?
   guildId               String
   totalValue            BigInt?
@@ -37,6 +38,7 @@ model User {
   userId         String
   currentBalance Float         @default(0)
   totalEarned    Float         @default(0)
+  priceLanguage  String?
   guildID        String
   participants   Participant[]
   guild          Guilds        @relation(fields: [guildID], references: [guildID], onDelete: Cascade)
@@ -63,8 +65,11 @@ model Participant {
 model Guilds {
   guildID                String        @id
   newEventChannelID      String?
+  newEventMessageID      String?
+  language               String?       @default("pt-BR")
   participationChannelID String?
   logsChannelID          String?
+  guildName              String?
   waitingVoiceChannelID  String?
   startedCategoryID      String?
   endedCategoryID        String?

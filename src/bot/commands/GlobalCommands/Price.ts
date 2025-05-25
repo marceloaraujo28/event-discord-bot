@@ -1,7 +1,8 @@
-import { EmbedBuilder, MessageFlags } from "discord.js";
+import { ColorResolvable, EmbedBuilder, MessageFlags } from "discord.js";
 import { validateTier } from "../../utils/validateTier";
 import { PriceType } from "../types";
 import { fuseSearchItem } from "../../utils/fuseSearchItem";
+import { useT } from "../../utils/useT";
 
 type itemsReturnType = {
   item_id: string;
@@ -17,15 +18,33 @@ type itemsReturnType = {
   buy_price_max_date: string;
 };
 
-export async function Price({ interaction }: PriceType) {
+export async function Price({ interaction, prisma }: PriceType) {
   await interaction.deferReply();
 
   const item = interaction.options.get("item")?.value?.toString().trim();
   const tier = interaction.options.get("tier")?.value?.toString().trim();
   const city = interaction.options.get("cidade")?.value?.toString().trim();
+  const server = interaction.options.get("servidor")?.value?.toString().trim();
+
+  const servidor = server ? server : "west";
+
+  let user;
+
+  try {
+    user = await prisma.user.findFirst({
+      where: {
+        userId: interaction.user.id,
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuário no banco de dados:", error);
+  }
+
+  const language = user?.priceLanguage ?? interaction.locale;
+  const t = useT(language);
 
   if (!item) {
-    return await interaction.editReply("Digite o nome de um item!");
+    return await interaction.editReply(t("price.noItem"));
   }
 
   let tierValidate: string | null = null;
@@ -34,15 +53,21 @@ export async function Price({ interaction }: PriceType) {
     tierValidate = validateTier(tier);
     if (!tierValidate)
       return interaction.editReply({
-        content: "Tier inválido. Use o formato correto, exemplo: `4.0`, `5.3`, `6.1`.",
+        content: t("price.invalidTier"),
       });
   }
 
   function formatTime(dateStr: string): string {
     const updatedUTC = new Date(dateStr);
 
-    // Converte horário UTC da API para sua hora local (ex: UTC-3)
-    const updatedLocal = new Date(updatedUTC.getTime() - 3 * 60 * 60 * 1000);
+    let updatedLocal;
+
+    if (servidor === "west") {
+      // Converte horário UTC da API para sua hora local (ex: UTC-3)
+      updatedLocal = new Date(updatedUTC.getTime() - 3 * 60 * 60 * 1000);
+    } else {
+      updatedLocal = new Date(updatedUTC.getTime());
+    }
 
     const now = new Date(); // Sua hora local
     let diffMs = now.getTime() - updatedLocal.getTime();
@@ -55,16 +80,16 @@ export async function Price({ interaction }: PriceType) {
     return `${h}h ${m}min`;
   }
 
-  const fuseResult = fuseSearchItem(item, tierValidate);
+  const fuseResult = fuseSearchItem(item, tierValidate, language);
   if (!fuseResult) {
-    return await interaction.editReply("Item não encontrado!");
+    return await interaction.editReply(t("price.itemNotFound"));
   }
 
-  const { itemId, itemName } = fuseResult;
+  const { itemId, itemName, color, tier: TierCompleted } = fuseResult;
 
   try {
     const result = await fetch(
-      `https://west.albion-online-data.com/api/v2/stats/prices/${itemId}?locations=${
+      `https://${servidor}.albion-online-data.com/api/v2/stats/prices/${itemId}?locations=${
         city ? city : "3003,5003,2004,0007,3005,4002,1002,3008"
       }&qualities=1,2,3,4,5`
     );
@@ -72,16 +97,23 @@ export async function Price({ interaction }: PriceType) {
     const data: itemsReturnType[] = await result.json();
 
     if (!data || data.length === 0) {
-      return await interaction.editReply("Nenhum dado encontrado para esse item.");
+      return await interaction.editReply(t("price.itemNotFound2"));
     }
 
     const qualites = {
-      1: "normal",
-      2: "bom",
-      3: "exepcional",
-      4: "excelente",
-      5: "obra prima",
+      1: t("price.qualities.normal"),
+      2: t("price.qualities.good"),
+      3: t("price.qualities.outstanding"),
+      4: t("price.qualities.excellent"),
+      5: t("price.qualities.masterpiece"),
     };
+
+    const serversList: Record<string, string> = {
+      west: "Americas(west)",
+      east: "Asia(east)",
+      europe: "Europe",
+    };
+
     const sellItems = data.filter((i) => i.sell_price_min > 0);
     const buyItems = data.filter((i) => i.buy_price_max > 0);
     sellItems.sort((a, b) => a.sell_price_min - b.sell_price_min);
@@ -108,26 +140,36 @@ export async function Price({ interaction }: PriceType) {
     }
 
     const embed = new EmbedBuilder()
-      .setTitle(`📦 ${itemName}`)
-      .setColor(0x00aeff)
+      .setTitle(`⚔️ ${itemName} ${TierCompleted ? `- ${TierCompleted}` : ""} ⚔️ `)
+      .setColor(`#${color}`)
+      .setDescription(`🌐\`SERVER - ${serversList[servidor].toUpperCase()}\``)
       .setThumbnail(`https://render.albiononline.com/v1/item/${itemId}.png`)
       .addFields(
-        { name: "Ordens de VENDA:", value: "\u200B", inline: false },
-        { name: "Cidade (Qualidade)", value: citySellStr || "N/A", inline: true },
-        { name: "Preço", value: priceSellStr || "N/A", inline: true },
-        { name: "Última Atualização", value: updateSellStr || "N/A", inline: true },
+        { name: t("price.embed.sellOrders"), value: "\u200B", inline: false },
+        { name: t("price.embed.city"), value: citySellStr || "N/A", inline: true },
+        { name: t("price.embed.price"), value: priceSellStr || "N/A", inline: true },
+        {
+          name: `${t("price.embed.lastUpdate")} ${servidor !== "west" ? "(UTC)" : ""}`,
+          value: updateSellStr || "N/A",
+          inline: true,
+        },
         { name: "\u200B", value: "----------------------", inline: false },
-        { name: "Ordens de COMPRA:", value: "\u200B", inline: false },
-        { name: "Cidade (Qualidade)", value: cityBuyStr || "N/A", inline: true },
-        { name: "Preço", value: priceBuyStr || "N/A", inline: true },
-        { name: "Última Atualização", value: updateBuyStr || "N/A", inline: true }
+        { name: t("price.embed.buyOrders"), value: "\u200B", inline: false },
+        { name: t("price.embed.city"), value: cityBuyStr || "N/A", inline: true },
+        { name: t("price.embed.price"), value: priceBuyStr || "N/A", inline: true },
+        {
+          name: `${t("price.embed.lastUpdate")} ${servidor !== "west" ? "(UTC)" : ""}`,
+          value: updateBuyStr || "N/A",
+          inline: true,
+        }
       )
-      .setFooter({ text: "criado por #celoaraujo" })
-      .setTimestamp();
+      .setFooter({
+        text: t("price.embed.footer"),
+      });
 
     return await interaction.editReply({ embeds: [embed] });
   } catch (error) {
     console.log("Erro ao buscar items", error);
-    return await interaction.editReply("Erro ao buscar os dados. Tente novamente!.");
+    return await interaction.editReply(t("price.catchError"));
   }
 }

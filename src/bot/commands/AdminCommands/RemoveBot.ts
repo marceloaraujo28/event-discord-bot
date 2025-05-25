@@ -1,22 +1,16 @@
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { RemoveBotType } from "../types";
+import { useT } from "../../utils/useT";
 
-export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
+export async function RemoveBot({ interaction, prisma, guildData }: RemoveBotType) {
   await interaction.deferReply();
+  const language = guildData.language;
+  const t = useT(language);
+
   try {
     const guild = interaction.guild;
 
-    if (!guild) return await interaction.editReply("Não foi possível encontrar a guild!");
-
-    //buscar info da guild no banco
-    const guildData = await prisma.guilds.findUnique({
-      where: {
-        guildID: guild.id,
-      },
-    });
-
-    if (!guildData) {
-      return await interaction.editReply("Nenhuma configuração encontrada para este servidor.");
-    }
+    if (!guild) return await interaction.editReply(t("removeBot.noGuild"));
 
     //buscar eventos
     const events = await prisma.event.findMany({
@@ -70,24 +64,37 @@ export async function RemoveBot({ interaction, prisma }: RemoveBotType) {
     }
 
     // Remover os dados do banco
-    await prisma.guilds.delete({ where: { guildID: guild.id } });
-    await prisma.event.deleteMany({ where: { guildId: guild.id } });
+    await Promise.all([
+      prisma.guilds.delete({ where: { guildID: guild.id } }),
+      prisma.event.deleteMany({ where: { guildId: guild.id } }),
+    ]);
+
+    const removedEmbed = new EmbedBuilder()
+      .setTitle(t("removeBot.embed.title"))
+      .setDescription(t("removeBot.embed.description"))
+      .setColor("Red")
+      .setFooter({ text: t("removeBot.embed.footer") })
+      .setTimestamp();
+
+    // Criar os botões
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel(t("removeBot.titleLabel"))
+        .setStyle(ButtonStyle.Link)
+        .setURL("https://discord.gg/AjGZbc5b2s") // Substitua pelo seu link do Discord
+    );
 
     if (!interaction.channel) {
-      return await interaction.user.send(
-        "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
-      );
+      return await interaction.user.send({ embeds: [removedEmbed], components: [row] });
     } else {
-      return await interaction.editReply(
-        "O bot foi removido com sucesso! Todos os canais, cargos e eventos foram excluídos."
-      );
+      return await interaction.editReply({ embeds: [removedEmbed], components: [row] });
     }
   } catch (error) {
     console.error(`Erro ao remover o bot na guild ${interaction.guild?.name}:${interaction.guildId}, ${error}`);
     if (!interaction.channel) {
-      return await interaction.user.send("Erro ao remover o bot, entre em contato com o suporte");
+      return await interaction.user.send(t("removeBot.error"));
     } else {
-      return await interaction.editReply("Erro ao remover o bot, entre em contato com o suporte");
+      return await interaction.editReply(t("removeBot.error"));
     }
   }
 }

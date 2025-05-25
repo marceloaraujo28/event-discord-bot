@@ -1,7 +1,11 @@
+import { useT } from "../../utils/useT";
 import { GuildBalanceType } from "../types";
 
-export async function GuildBalance({ interaction, prisma }: GuildBalanceType) {
+export async function GuildBalance({ interaction, prisma, guildData }: GuildBalanceType) {
   await interaction.deferReply();
+  const language = guildData.language;
+  const t = useT(language);
+
   try {
     const guild = await prisma.guilds.findUnique({
       where: {
@@ -10,16 +14,18 @@ export async function GuildBalance({ interaction, prisma }: GuildBalanceType) {
     });
 
     if (!guild) {
-      await interaction.editReply(`Guild não cadastrada no banco!`);
+      await interaction.editReply(t("guildBalance.guildNotFound"));
       return;
     }
 
     const currentBalance = Math.round(guild.totalBalance);
 
-    await interaction.editReply(`O saldo da guild é de: \`${currentBalance.toLocaleString("en-US")}\``);
+    await interaction.editReply(
+      t("guildBalance.guildBalance", { currentBalance: currentBalance.toLocaleString("en-US") })
+    );
     return;
   } catch (error) {
     console.log("Erro ao buscar o saldo da guild!", error);
-    return await interaction.editReply("Erro ao buscar saldo da guild na base de dados!");
+    return await interaction.editReply(t("guildBalance.catchError"));
   }
 }

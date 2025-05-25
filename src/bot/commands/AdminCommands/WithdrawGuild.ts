@@ -1,68 +1,76 @@
 import { sendMessageChannel } from "../../utils/sendMessageChannel";
+import { useT } from "../../utils/useT";
 import { WithdrawGuildType } from "../types";
 
-export async function WithdrawGuild({ interaction, prisma }: WithdrawGuildType) {
+export async function WithdrawGuild({ interaction, prisma, guildData }: WithdrawGuildType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+
+  const t = useT(language);
+
   const withdrawValue = interaction.options.get("valor")?.value?.toString().trim();
   if (!withdrawValue) {
-    return await interaction.editReply("Campo em branco! Por favor digite um número");
+    return await interaction.editReply(t("withdrawGuild.invalidValue"));
   }
   const regex = /^[0-9,\.]+$/;
   if (!regex.test(withdrawValue)) {
-    return await interaction.editReply("Entrada inválida. Por favor, insira um número válido ex: 1,000,000");
+    return await interaction.editReply(t("withdrawGuild.invalidValue2"));
   }
 
   // Remover pontos e vírgulas do valor que vem no comando
   const withdrawValueFormatted = Number(withdrawValue.replace(/[.,]/g, ""));
-
-  const guildData = await prisma.guilds.findUnique({
-    where: {
-      guildID: interaction.guildId ?? "",
-    },
-  });
 
   const currentBalance = guildData?.totalBalance ?? 0;
 
   if (currentBalance < withdrawValueFormatted) {
     await sendMessageChannel({
       channelID: guildData?.financialChannelID,
-      messageChannel: `<@${
-        interaction.user.id
-      }> tentou realizar um saque no valor de \`${withdrawValueFormatted.toLocaleString(
-        "en-US"
-      )}\` mas a guild não possui saldo suficiente!`,
+      messageChannel: t("withdrawGuild.withdrawInsuficient", {
+        userId: interaction.user.id,
+        withdrawValue: withdrawValueFormatted.toLocaleString("en-US"),
+      }),
       guild: interaction.guild,
     });
 
-    return await interaction.editReply(`O saldo da guild é insuficiente para realizar o saque!`);
+    return await interaction.editReply(t("withdrawGuild.withdrawInsuficientMessage"));
   }
 
-  const withdraw = await prisma.guilds.update({
-    where: {
-      guildID: interaction?.guild?.id ?? "",
-    },
-    data: {
-      totalBalance: {
-        decrement: Math.round(withdrawValueFormatted),
+  try {
+    const withdraw = await prisma.guilds.update({
+      where: {
+        guildID: interaction?.guild?.id ?? "",
       },
-    },
-  });
+      data: {
+        totalBalance: {
+          decrement: Math.round(withdrawValueFormatted),
+        },
+      },
+    });
 
-  if (!withdraw) {
-    return await interaction.editReply("Erro ao realizar o saque!");
+    if (!withdraw) {
+      return await interaction.editReply(t("withdrawGuild.withdrawError"));
+    }
+
+    const currentValue = Math.round(withdraw.totalBalance);
+
+    await sendMessageChannel({
+      channelID: guildData?.financialChannelID,
+      messageChannel: t("withdrawGuild.withdrawSuccess", {
+        userId: interaction.user.id,
+        withdrawValue: withdrawValueFormatted.toLocaleString("en-US"),
+        currentValue: currentValue.toLocaleString("en-US"),
+      }),
+      guild: interaction.guild,
+    });
+
+    return await interaction.editReply(
+      t("withdrawGuild.withdrawSuccessMessage", {
+        currentValue: currentValue.toLocaleString("en-US"),
+      })
+    );
+  } catch (error) {
+    console.error("Erro no banco ao realizar o saque:", error);
+    return await interaction.editReply(t("withdrawGuild.catchError"));
   }
-
-  const currentValue = Math.round(withdraw.totalBalance);
-
-  await sendMessageChannel({
-    channelID: guildData?.financialChannelID,
-    messageChannel: `<@${interaction.user.id}> sacou um valor de \`${withdrawValueFormatted.toLocaleString(
-      "en-US"
-    )}\`  do saldo da guild, saldo atual: \`${currentValue.toLocaleString("en-US")}\``,
-    guild: interaction.guild,
-  });
-
-  return await interaction.editReply(
-    `Saque efetuado com sucesso! o saldo agora é de: \`${currentValue.toLocaleString("en-US")}\``
-  );
 }

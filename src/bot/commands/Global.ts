@@ -1,17 +1,16 @@
 import { Balances } from "./GlobalCommands/Balances";
-import { Help } from "./GlobalCommands/Help";
 import { MemberBalance } from "./GlobalCommands/MemberBalance";
 import { MyBalance } from "./GlobalCommands/MyBalance";
 import { TransferBalance } from "./GlobalCommands/TransferBalance";
 import { GlobalType } from "./types";
 import { GuildBalance } from "./GlobalCommands/GuildBalance";
-import { Price } from "./GlobalCommands/Price";
 
-export async function Global({ commandName, interaction, prisma, member }: GlobalType) {
+export async function Global({ commandName, interaction, prisma, member, guildData }: GlobalType) {
   if (commandName === "saldos") {
     await Balances({
       interaction,
       prisma,
+      guildData,
     });
 
     return true;
@@ -21,6 +20,7 @@ export async function Global({ commandName, interaction, prisma, member }: Globa
     await GuildBalance({
       interaction,
       prisma,
+      guildData,
     });
     return true;
   }
@@ -30,6 +30,7 @@ export async function Global({ commandName, interaction, prisma, member }: Globa
       member,
       interaction,
       prisma,
+      guildData,
     });
     return true;
   }
@@ -38,6 +39,7 @@ export async function Global({ commandName, interaction, prisma, member }: Globa
     await TransferBalance({
       interaction,
       prisma,
+      guildData,
     });
 
     return true;
@@ -47,20 +49,7 @@ export async function Global({ commandName, interaction, prisma, member }: Globa
     await MemberBalance({
       interaction,
       prisma,
-    });
-    return true;
-  }
-
-  if (commandName === "help") {
-    const embed = Help();
-    await interaction.reply({ embeds: [embed] });
-    return true;
-  }
-
-  if (commandName === "preco") {
-    await Price({
-      interaction,
-      prisma,
+      guildData,
     });
     return true;
   }

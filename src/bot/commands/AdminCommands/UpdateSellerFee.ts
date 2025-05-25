@@ -1,12 +1,17 @@
 import { EmbedBuilder } from "discord.js";
 import { UpdateSellerFeeType } from "../types";
+import { useT } from "../../utils/useT";
 
-export async function UpdateSellerFee({ interaction, prisma }: UpdateSellerFeeType) {
+export async function UpdateSellerFee({ interaction, prisma, guildData }: UpdateSellerFeeType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+
+  const t = useT(language);
 
   try {
     if (!interaction.guildId) {
-      return interaction.editReply("Erro ao atualizar a taxa, guild id não existe!");
+      return interaction.editReply(t("updateSellerFee.noGuild"));
     }
 
     const sellerFee = interaction.options.get("taxa")?.value;
@@ -21,7 +26,7 @@ export async function UpdateSellerFee({ interaction, prisma }: UpdateSellerFeeTy
     });
 
     if (!updatedFee) {
-      return await interaction.editReply("Digite um valor valido!");
+      return await interaction.editReply(t("updateSellerFee.noFee"));
     }
 
     // Busca os dados da guild para pegar o canal do evento
@@ -30,13 +35,13 @@ export async function UpdateSellerFee({ interaction, prisma }: UpdateSellerFeeTy
     });
 
     if (!guildInfo?.newEventChannelID) {
-      return console.log("Canal de eventos não encontrado para atualização da taxa do vendedor!");
+      return interaction.editReply(t("updateSellerFee.eventChannelNotFound"));
     }
 
     // Obtém o canal onde está o embed
     const channel = await interaction.guild?.channels.fetch(guildInfo.newEventChannelID);
     if (!channel?.isTextBased()) {
-      return console.log("Canal de eventos não encontrado para atualização da taxa do vendedor!");
+      return interaction.editReply(t("updateSellerFee.eventChannelNotFound2"));
     }
 
     const messages = await channel?.messages.fetch({ after: "0", limit: 1 });
@@ -45,26 +50,32 @@ export async function UpdateSellerFee({ interaction, prisma }: UpdateSellerFeeTy
     const embed = message?.embeds[0];
 
     if (!embed) {
-      return console.log("Erro: Não foi possível encontrar o embed de criação de eventos.");
+      return interaction.editReply(t("updateSellerFee.embedNotFound"));
     }
 
     const updatedEmbed = new EmbedBuilder(embed.toJSON());
 
-    updatedEmbed.setFields(
-      updatedEmbed.data.fields?.map((field) =>
-        field.name === "Taxa do vendedor" ? { ...field, value: `${updatedFee.sellerFee}%` } : field
-      ) ?? []
-    );
+    const fields = updatedEmbed.data.fields ?? [];
+
+    fields[2] = {
+      ...fields[2],
+      value: `${updatedFee.sellerFee}%`,
+    };
+
+    updatedEmbed.setFields(fields);
 
     await message.edit({ embeds: [updatedEmbed] });
 
     return interaction.editReply(
-      `<@${interaction.user.id}> atualizou a taxa do vendedor para ${updatedFee.sellerFee}%`
+      t("updateSellerFee.updateSuccess", {
+        userId: interaction.user.id,
+        sellerFee: updatedFee.sellerFee,
+      })
     );
   } catch (error) {
     console.error(
       `Erro ao atualizar a taxa do vendedor no servidor: ${interaction.guild?.name} ${interaction.guildId}`
     );
-    return interaction.editReply("Erro ao atualizar taxa do vendedor");
+    return await interaction.editReply(t("updateSellerFee.updateError"));
   }
 }

@@ -1,8 +1,13 @@
 import { sendMessageChannel } from "../../utils/sendMessageChannel";
+import { useT } from "../../utils/useT";
 import { ConfiscateBalanceType } from "../types";
 
-export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalanceType) {
+export async function ConfiscateBalance({ interaction, prisma, guildData }: ConfiscateBalanceType) {
   await interaction.deferReply();
+
+  const language = guildData.language;
+  const t = useT(language);
+
   const user = interaction.options.get("membro")?.user;
 
   try {
@@ -16,7 +21,7 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
     });
 
     if (!findUser) {
-      return await interaction.editReply("Usuário não encontrado na base de dados!");
+      return await interaction.editReply(t("confiscateBalance.userNotFound"));
     }
 
     //retirar saldo do usuário e depositar na guild
@@ -46,7 +51,7 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
     ]);
 
     if (!result) {
-      return await interaction.editReply("Erro ao tentar confiscar saldo do usuário!");
+      return await interaction.editReply(t("confiscateBalance.confiscateBalanceError"));
     }
     const guildData = await prisma.guilds.findUnique({
       where: {
@@ -56,13 +61,20 @@ export async function ConfiscateBalance({ interaction, prisma }: ConfiscateBalan
 
     await sendMessageChannel({
       guild: interaction.guild,
-      messageChannel: `<@${interaction.user.id}> confiscou o saldo do jogador <@${user?.id}>`,
+      messageChannel: t("confiscateBalance.confiscateBalanceSuccess", {
+        interactionUserId: interaction.user.id,
+        userId: user?.id,
+      }),
       channelID: guildData?.financialChannelID,
     });
 
-    return await interaction.editReply(`Saldo do jogador <@${user?.id}> confiscado com sucesso!`);
+    return await interaction.editReply(
+      t("confiscateBalance.confiscateBalanceSuccessMessage", {
+        userId: user?.id,
+      })
+    );
   } catch (error) {
     console.log("Erro ao confiscar saldo do usuário!", error);
-    return await interaction.editReply("Erro no banco ao tentar confiscar saldo do jogador!");
+    return await interaction.editReply(t("confiscateBalance.confiscateBalanceErrorMessage"));
   }
 }
