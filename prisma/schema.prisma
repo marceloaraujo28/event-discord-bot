@@ -17,6 +17,7 @@ model Event {
   endTime               BigInt?
   channelID             String?
   messageID             String?
+  simulatedMessageID    String?
   seller                String?
   guildId               String
   totalValue            BigInt?
@@ -64,6 +65,7 @@ model Participant {
 model Guilds {
   guildID                String        @id
   newEventChannelID      String?
+  newEventMessageID      String?
   language               String?       @default("pt-BR")
   participationChannelID String?
   logsChannelID          String?
