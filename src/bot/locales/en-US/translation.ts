@@ -24,17 +24,24 @@ const enUS = {
     waitingVoicechannel: "Waiting for content",
     startedEvents: "events started",
     endedEvents: "events ended",
-    errorSearchRole: "Error fetching role {{roleId}}, in guild ${{guildId}}",
+    errorSearchRole: "Error fetching role {{roleId}}, in guild {{guildId}}",
     welcomeEmbed: {
-      title: "🎉 Thank you for using Albion Event Bot! 🎉",
+      title: "Thank you for using Albion Event Bot!",
       description:
-        "Setup was successfully completed! Your server is now ready to create events and manage your community with ease.",
+        "Your server is now ready to create events, manage your community with ease, and check market prices",
       field1name: "📌 Next Steps",
       field1value: "Use the `/help` command to see all available commands and learn how to set up events.",
-      field2name: "💡 Tip",
-      field2value: "Add the `Albion Event Manager` role to those who should manage events on the server.",
       field3name: "Support",
       field3value: "\n\n[Discord Albion Event Bot]({{discordLink}})\n",
+    },
+    setupSuccessEmbed: {
+      title: "Setup completed successfully!",
+      description: "You can now create events and manage your guild's finances!",
+      field1name: "📌 Commands to help you get started",
+      field1value:
+        "Use the `/help` command to learn how to create and manage events in detail\n Use `/lang` to change the bot's language\n Assign the **Albion Event Bot Manager** role to members who can help manage events (start, end, cancel, etc.)",
+      field2name: "Attention!",
+      field2value: "Do not delete the channels created by the bot, they are essential for its proper operation.",
     },
     setupFinished: "Setup completed successfully",
     setupError: "Error during setup, please contact support",
@@ -113,6 +120,7 @@ const enUS = {
         "The event bot has been successfully removed.\n All associated channels, roles, and events have been deleted. Thank you for using our services!\n Join our Discord server if you have any feedback or suggestions, feel free to share them with us.",
       footer: "See you soon!",
     },
+    titleLabel: "Discord Server",
     errorRemove: "Error removing the bot, please contact support",
   },
   simulateEvent: {
@@ -148,7 +156,7 @@ const enUS = {
     embed: {
       title: "Deposit Confirmation",
       description:
-        "<@{{userId}}> reported the total value of `{{depositValue}}` collected in **{{eventName}}**.\n\n Value to be distributed among participants **(with fees applied)**: `{{valueDistribuido}}`\n\n ✅ **Click the reaction below to confirm.**",
+        "<@{{userId}}> reported the total value of `{{depositValue}}` collected in **{{eventName}}**.\n\n Value to be distributed among participants **(with fees applied)**: `{{valueDistribuido}}`\n\n ✅ **Click the reaction below to confirm. (Admin Only)**",
       successOrder: "Deposit request sent to the channel <#{{financeChannelId}}>.",
       catchError: "Error processing the deposit, please contact support",
     },
@@ -204,7 +212,9 @@ const enUS = {
       "Here are all the commands available for the bot, organized for easy use.\n\n⚠️ **Attention:** Do not delete any room created by the bot! If this happens, reconfiguration will be required to avoid errors.\n\n",
     field1name: "\uD83D\uDCB0 Market Prices\n",
     field1value:
-      "`/price` - Checks the price of an item in the market. (tier, city, and server are optional).\nEx: `/price greataxe`, or \n`/price greataxe [tier example: 4.3] [city] [server]`",
+      "`/price` - Checks the price of an item in the market. (tier, city, and server are optional)." +
+      " Example usage: `/price assassin jacket`\n" +
+      "`/price-lang` - Changes the bot's market language. Use to switch between available languages.",
     field2name: "\u2728 Initial Setup for Balance Management",
     field2value:
       "`/lang` - Changes the bot's language.  **(Admin)**\n" +
@@ -216,6 +226,7 @@ const enUS = {
     field3name: "\uD83D\uDCB3 Financial Transactions",
     field3value:
       "`/deposit-guild` - Adds balance to the guild's treasury. **(Admin)**\n" +
+      "`/deposit-member` - Adds an amount to the member's balance. **(Admin)**\n" +
       "`/withdraw-guild` - Withdraws balance from the guild's treasury. **(Admin)**\n" +
       "`/pay-member` - Sends a payment to a member using the guild's balance. **(Admin)**\n" +
       "`/confiscate-balance` - Removes a member's balance and adds it to the guild. **(Admin)**\n" +
@@ -227,7 +238,8 @@ const enUS = {
       "`/update-participation` - Modifies a player's participation percentage.\n" +
       "`/update-seller-fee` - Adjusts the fee paid to sellers. **(Admin)**\n" +
       "`/update-guild-fee` - Adjusts the fee paid to the guild. **(Admin)**\n" +
-      "`/deposit-event` - Deposits the event funds into the participants' balances.",
+      "`/deposit-event` - Deposits the event funds into the participants' balances.\n" +
+      "`/archive-event` - Archives an event and sends the summary to the financial channel. **(Admin)**",
     field5name: "\u2753 Help",
     field5value: "\n\nSupport: \n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
     footer: "Use the commands correctly to ensure the best experience!",
@@ -250,8 +262,10 @@ const enUS = {
       price: "Price",
       lastUpdate: "Last update",
       buyOrders: "BUY Orders",
-      footer: "\n\n❗ Make sure to type the item name in the same language as your Discord ❗\n\nNeed help? Use /help",
+      footer:
+        "\n\nExample: /price assassin jacket\nOptional parameters: tier, server, city\n\nUse /price-lang to change the language\nUse /help for more information",
     },
+
     catchError: "Error retrieving data, please contact support",
   },
   deleteEvent: {
@@ -310,22 +324,54 @@ const enUS = {
     adminOnly: "Only an **Administrator** can use this command",
     noGuildInteraction: "Guild data not found. Use /setup or contact support",
     eventClosed: "Event already closed, commands can no longer be used",
-    sellerOnly: "Only a Manager or Administrator can add a seller to the event",
+    sellerOnly: "Only the Event Creator, a Manager, or an Administrator can add a seller to the event",
     noSeller: "Please add a seller before using this command",
     noPermission: "This command can only be used by the assigned seller",
     onlyEventChannel: "This command can only be used in an event channel",
     commandCatchError: "An error occurred while processing the command",
     createEventErro: "Error while trying to create event",
     notProcessedReaction: "{{user}} reaction not processed because the original message was deleted",
-    waitSendMessage: "{{user}} please wait 2 seconds before reacting again",
+    waitSendMessage: "<@{{user}}> please wait 2 seconds before reacting again",
     eventUnidentified: "Could not identify the event",
     depositUnidentified: "Could not identify the deposit amount",
     eventNotFound: "Event not found",
     confirmedDepositEmbed: {
       title: "{{eventName}} Deposit Confirmed",
       description:
-        "<@{{userId}}> confirmed a deposit of **{{totalValue}}** silver, amount already deposited into the participants' balance of **${eventName}**",
+        "<@{{userId}}> confirmed a deposit of **{{totalValue}}** silver, amount already deposited into the participants' balance of **{{eventName}}**",
     },
+  },
+  seller: {
+    eventNoFinished: "Event not finished",
+    noChannel: "Event channel does not exist",
+    eventNotFound: "Event not found in the room",
+    noMember: "<@{{interactionUser}}> you need to select a valid member",
+    sellerVinculated: "<@{{interactionUser}}> linked <@{{memberId}}> as the event seller",
+    errorVinculated: "Error linking seller, please contact support",
+  },
+  archiveEvent: {
+    eventNotFinished: "Event not finished or not found",
+    eventNotSimulated: "Event not simulated, please simulate the event before archiving",
+    embedNotFound: "Event embed not found",
+    messagesNotFound: "Channel messages not found",
+    messageNotContainsEmbeds: "The message does not contain embeds.",
+    eventEmbedNotFound: "Event embed not found",
+    financialChannelDataBaseNotFound: "Financial channel not found in the database to send the archived event",
+    financialChannelNotFound: "Financial channel not found to send the archived event",
+    totalValue: "Total Value",
+    eventName1: "{{eventName}} created by {{creatorName}} - Archived",
+    eventName2: "{{eventName}} - Archived",
+    successArchive: "Event successfully archived",
+    catchError: "Error archiving the event, please contact support",
+  },
+  depositMember: {
+    invalidValue: "Blank field, please enter a value",
+    invalidValue2: "Invalid input. Please enter a valid number example 1,000,000",
+    userNotFound: "Invalid user",
+    depositMemberError: "Error trying to deposit into the member's balance",
+    sendMessageChannel: "<@{{interactionUser}}> deposited `{{valueFormatted}}` into <@{{userId}}>'s balance",
+    depositMemberSuccess: "Deposit of `{{valueFormatted}}` successfully made to <@{{userId}}>'s balance",
+    catchError: "Error trying to deposit into the member's balance, please contact support",
   },
 };
 

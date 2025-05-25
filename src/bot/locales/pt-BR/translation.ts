@@ -25,18 +25,25 @@ const ptBR = {
     waitingVoicechannel: "Aguardando conteúdo",
     startedEvents: "eventos iniciados",
     endedEvents: "eventos finalizados",
-    errorSearchRole: "Erro ao buscar cargo {{roleId}}, na guild ${{guild.id}}",
+    errorSearchRole: "Erro ao buscar cargo {{roleId}}, na guild {{guild.id}}",
     welcomeEmbed: {
-      title: "🎉 Obrigado por usar o Albion Event Bot! 🎉",
+      title: "Obrigado por usar o Albion Event Bot!",
       description:
-        "O setup foi concluído com sucesso! Agora seu servidor está pronto para criar eventos e gerenciar sua comunidade com facilidade.",
+        "Seu servidor agora está pronto para criar eventos, gerenciar sua comunidade com facilidade e consultar preços no mercado.",
       field1name: "📌 Próximos Passos",
       field1value:
         "Use o comando `/help` para ver todos os comandos disponíveis e aprender como configurar os eventos.",
-      field2name: "💡 Dica",
-      field2value: "Adicione o cargo `Albion Event Manager` a quem deve gerenciar os eventos no servidor.",
       field3name: "Suporte",
       field3value: "\n\n[Discord Albion Event Bot]({{discordLink}})\n",
+    },
+    setupSuccessEmbed: {
+      title: "Setup concluído com sucesso!",
+      description: "Agora você pode criar eventos e ter controlar o financeiro da sua guilda!",
+      field1name: "📌 Comandos que vão te ajudar",
+      field1value:
+        "Use o comando `/help` para ver como criar e gerenciar eventos com mais detalhes\n User `/lang` para mudar o idioma do bot\n Adicione o cargo de **Albion Event Bot Manager** para os membros que podem ajudar a gerenciar os eventos (iniciar, finalizar, cancelar, etc.)",
+      field2name: "Atenção!",
+      field2value: "Não exclua os canais criados pelo bot, eles são essenciais para o funcionamento do bot.",
     },
     setupFinished: "Setup concluído com sucesso",
     setupError: "Erro ao fazer o setup, entre em contato com o suporte",
@@ -116,6 +123,7 @@ const ptBR = {
         "O bot de evento foi removido com sucesso.\n Todos os canais, cargos e eventos associados foram excluídos. Agradecemos por ter utilizado nossos serviços!\n Entre em nosso servidor do Discord, se você tiver algum feedback ou sugestão, não hesite em nos enviar",
       footer: "Até breve!",
     },
+    titleLabel: "Servidor do Discord",
     errorRemove: "Erro ao remover o bot, entre em contato com o suporte",
   },
   simulateEvent: {
@@ -151,7 +159,7 @@ const ptBR = {
     embed: {
       title: "Confirmação de Depósito",
       description:
-        "<@{{userId}}> informou o valor total de `{{depositValue}}` arrecadado no **{{eventName}}**.\n\n valor a ser distribuído entre os participantes **(com taxas)**: `{{valueDistribuido}}`\n\n ✅ **Clique na reação abaixo para confirmar.**",
+        "<@{{userId}}> informou o valor total de `{{depositValue}}` arrecadado no **{{eventName}}**.\n\n valor a ser distribuído entre os participantes **(com taxas)**: `{{valueDistribuido}}`\n\n ✅ **Clique na reação abaixo para confirmar. (Apenas Admin)**",
       successOrder: "Pedido de depósito enviado para o canal <#{{financeChannelId}}>",
       catchError: "Erro ao realizar o depósito, entre em contato com o suporte",
     },
@@ -188,7 +196,7 @@ const ptBR = {
     catchError: "Erro no banco ao tentar consultar seu saldo, entre em contato com o suporte",
   },
   transferBalance: {
-    invalidValue: "Campo em branco, Por favor digite um número",
+    invalidValue: "Campo em branco, Por favor digite um valor",
     invalidValue2: "Entrada inválida. Por favor, insira um número válido ex: 1,000,000",
     senderNotFound: "Remetente não encontrado na base de dados",
     insufficientBalance: "Seu saldo é insuficiente para realizar a transferência",
@@ -207,7 +215,9 @@ const ptBR = {
       "Aqui estão todos os comandos disponíveis do bot, organizados para facilitar seu uso.\n\n⚠️ **Atenção:** Não exclua nenhuma sala criada pelo bot! Caso isso aconteça, será necessário reconfigurá-lo para evitar erros.\n\n",
     field1name: "\uD83D\uDCB0 Preços Mercado\n",
     field1value:
-      "`/preco` - Consulta o preço de um item no mercado. (tier,cidade e server são opcionais).\nEx: `/preco machado de guerra`, ou \n`/preco machado de guerra [tier ex: 4.3] [cidade] [server]`",
+      "`/preco` - Consulta o preço de um item no mercado. (tier, cidade e server são opcionais)." +
+      " Exemplo de uso: `/preco casaco de assassino`\n" +
+      "`/price-lang` - Altera o idioma do bot para o mercado. Use para trocar entre os idiomas disponíveis.",
     field2name: "\u2728 Configuração Inicial Gerenciamento de Saldo",
     field2value:
       "`/lang` - Altera o idioma do bot.  **(Admin)**\n" +
@@ -219,6 +229,7 @@ const ptBR = {
     field3name: "\uD83D\uDCB3 Transações Financeiras",
     field3value:
       "`/depositar-guild` - Adiciona saldo ao caixa da guild. **(Admin)**\n" +
+      "`/depositar-membro` - Adiciona um valor no saldo do membro. **(Admin)**\n" +
       "`/sacar-guild` - Retira saldo do caixa da guild. **(Admin)**\n" +
       "`/pagar-membro` - Envia um pagamento para um membro utilizando o saldo da guild. **(Admin)**\n" +
       "`/confiscar-saldo` - Remove o saldo de um membro e adiciona à guild. **(Admin)**\n" +
@@ -230,7 +241,8 @@ const ptBR = {
       "`/atualizar-participacao` - Modifica a porcentagem de participação de um jogador.\n" +
       "`/atualizar-taxa-vendedor` - Ajusta a taxa paga aos vendedores. **(Admin)**\n" +
       "`/atualizar-taxa-guild` - Ajusta a taxa paga à guild. **(Admin)**\n" +
-      "`/depositar-evento` - Deposita o valor do evento no saldo dos participantes.",
+      "`/depositar-evento` - Deposita o valor do evento no saldo dos participantes.\n" +
+      "`/arquivar-evento` - Arquiva um evento e envia o resumo no canal financeiro. **(Admin)**",
     field5name: "\u2753 Ajuda",
     field5value: "\n\nSuporte: \n[Discord Albion Event Bot](https://discord.gg/AjGZbc5b2s)\n",
     footer: "Use os comandos corretamente para garantir a melhor experiência!",
@@ -253,7 +265,8 @@ const ptBR = {
       price: "Preço",
       lastUpdate: "Última atualização",
       buyOrders: "Ordens de COMPRA",
-      footer: "\n\n❗ Digite o nome do item no idioma do seu Discord ❗\n\n/help para mais informações",
+      footer:
+        "\n\nExemplo de uso: /preco casaco de assassino\nParâmetros opcionais: tier, server, city\n\nUse /price-lang para trocar o idioma\nUse /help para mais informações",
     },
     catchError: "Erro ao buscar dados, entre em contato com o suporte",
   },
@@ -313,22 +326,55 @@ const ptBR = {
     adminOnly: "Apenas um **Administrador** pode usar esse comando",
     noGuildInteraction: "Dados da guild não encontrados, use /setup ou entre em contato com o suporte",
     eventClosed: "Evento já fechado, não é possivel mais usar comandos",
-    sellerOnly: "Apenas um Manager ou Administrador pode adicionar um vendedor ao evento",
+    sellerOnly: "Apenas o Criador do evento, Manager ou Administrador pode adicionar um vendedor ao evento",
     noSeller: "Adicione um vendedor antes de usar esse comando",
     noPermission: "esse comando só pode ser usado pelo vendedor",
     onlyEventChannel: "esse comando só pode ser usado em um canal de eventos",
     commandCatchError: "Ocorreu um erro ao processar o comando",
     createEventErro: "Erro ao tentar criar evento",
     notProcessedReaction: "{{user}} reação não processada porque a mensagem original foi apagada",
-    waitSendMessage: "{{user}} aguarde 2 segundos antes de reagir novamente",
+    waitSendMessage: "<@{{user}}> aguarde 2 segundos antes de reagir novamente",
     eventUnidentified: "Não foi possível identificar o evento",
     depositUnidentified: "Não foi possível identificar o valor do depósito",
     eventNotFound: "Evento não encontrado",
     confirmedDepositEmbed: {
       title: "Depósito do {{eventName}} Confirmado",
       description:
-        "<@{{userId}}> confirmou um depósito no valor de **{{totalValue}}** pratas, valor já depositado no saldo dos participantes do **${eventName}**",
+        "<@{{userId}}> confirmou um depósito no valor de **{{totalValue}}** pratas, valor já depositado no saldo dos participantes do **{{eventName}}**",
     },
+  },
+  seller: {
+    eventNoFinished: "Evento não finalizado",
+    noChannel: "Canal do evento não existe",
+    eventNotFound: "Evento não encontrado na sala",
+    noMember: "<@{{interactionUser}}> você precisa selecionar um membro válido",
+    sellerVinculated: "<@{{interactionUser}}> vinculou <@{{memberId}}> como vendedor do evento",
+    errorVinculated: "Erro ao vincular vendedor, entre em contato com o suporte",
+  },
+  archiveEvent: {
+    eventNotFinished: "Evento não finalizado ou não encontrado",
+    eventNotSimulated: "Evento não simulado, Por favor, simule o evento antes de arquivar",
+    embedNotFound: "Embed do evento não encontrado",
+    messagesNotFound: "Mensagens do canal não encontradas",
+    messageNotContainsEmbeds: "A mensagem não contém embeds.",
+    eventEmbedNotFound: "Embed do evento não encontrado",
+    financialChannelDataBaseNotFound:
+      "Canal financeiro não encontrado no banco de dados para enviar o evento arquivado",
+    financialChannelNotFound: "Canal financeiro não encontrado para enviar o evento arquivado",
+    totalValue: "Valor Total",
+    eventName1: "{{eventName}} criado por {{creatorName}} - Arquivado",
+    eventName2: "{{eventName}} - Arquivado",
+    successArchive: "Evento arquivado com sucesso",
+    catchError: "Erro ao arquivar o evento, entre em contato com o suporte",
+  },
+  depositMember: {
+    invalidValue: "Campo em branco, Por favor digite um valor",
+    invalidValue2: "Entrada inválida. Por favor, insira um número válido ex: 1,000,000",
+    userNotFound: "Usuário inválido",
+    depositMemberError: "Erro ao tentar fazer um depósito no saldo do membro",
+    sendMessageChannel: "<@{{interactionUser}}> depositou `{{valueFormatted}}` no saldo de <@{{userId}}>",
+    depositMemberSuccess: "Depósito de `{{valueFormatted}}` realizado com sucesso no saldo de <@{{userId}}>",
+    catchError: "Erro ao tentar fazer um depósito no saldo do membro, entre em contato com o suporte",
   },
 };
 
