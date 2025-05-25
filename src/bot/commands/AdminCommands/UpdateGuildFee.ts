@@ -70,7 +70,10 @@ export async function UpdateGuildFee({ interaction, prisma, guildData }: UpdateG
       t("updateGuildFee.updateSuccess", { userId: interaction.user.id, guildFee: updatedFee.guildFee })
     );
   } catch (error) {
-    console.error(`Erro ao atualizar a taxa da guild no servidor: ${interaction.guild?.name} ${interaction.guildId}`);
+    console.error(
+      `Erro ao atualizar a taxa da guild no servidor: ${interaction.guild?.name} ${interaction.guildId}`,
+      error
+    );
     return await interaction.editReply(t("updateGuildFee.updateError"));
   }
 }

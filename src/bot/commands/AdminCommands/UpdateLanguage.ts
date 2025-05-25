@@ -24,7 +24,7 @@ export async function UpdateLanguage({ interaction, prisma, guildData }: UpdateL
 
     embed.setTitle("language updated successfully");
     embed.setDescription(`Language updated to ${languageName}`);
-    embed.setThumbnail("https://i.ibb.co/6jNgbzf/Sem-T-tulo-1.png");
+    embed.setThumbnail("https://cdn.discordapp.com/avatars/1272188978765893714/dadee0975ad1b9c9cf65c51290dabaa6.png");
     embed.setFields([
       {
         name: "Current Language:",
