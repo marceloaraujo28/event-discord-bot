@@ -171,6 +171,7 @@ client.on(
 
     if (message.author?.id !== client.user?.id) return;
 
+
     const guildData = await prisma.guilds.findUnique({
       where: {
         guildID: message.guild?.id,
@@ -188,7 +189,16 @@ client.on(
 
     //verificação de tempo de reação
     if (isInCooldown(user.id)) {
-      await reaction.users.remove(user.id);
+      try {
+        await reaction.users.remove(user.id);
+      } catch (err: any) {
+        if (err.code === 10008) {
+          console.warn("Mensagem já deletada, não foi possível remover a reação.");
+          return;
+        } else {
+          console.error("Erro ao remover reação:", err);
+        }
+      }
       const channel = reaction.message.channel;
       if ("send" in channel && typeof channel.send === "function") {
         try {
