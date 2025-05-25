@@ -9,7 +9,6 @@ export async function Balances({ interaction, prisma, guildData }: BalancesType)
   const t = useT(language);
 
   try {
-    console.log("buscando saldo");
     const users = await prisma.user.findMany({
       where: {
         guildID: interaction.guildId ?? "",

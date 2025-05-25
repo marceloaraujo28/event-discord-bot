@@ -8,6 +8,7 @@ import { Global } from "../commands/Global";
 import { Seller } from "../commands/Seller";
 import { Help } from "../commands/GlobalCommands/Help";
 import { Price } from "../commands/GlobalCommands/Price";
+import { UpdatePriceLang } from "../commands/GlobalCommands/UpdatePriceLang";
 
 export async function handleCommandInteraction(
   interaction: CommandInteraction<CacheType>,
@@ -38,7 +39,16 @@ export async function handleCommandInteraction(
     if (commandName === "help") {
       const embed = Help({ interaction });
       await interaction.reply({ embeds: [embed] });
-      return true;
+      return;
+    }
+
+    if (commandName === "price-lang") {
+      await UpdatePriceLang({
+        interaction,
+        prisma,
+      });
+
+      return;
     }
 
     if (commandName === "preco") {
@@ -46,7 +56,7 @@ export async function handleCommandInteraction(
         interaction,
         prisma,
       });
-      return true;
+      return;
     }
 
     //comandos a serem usados apenas por administrador para configurações
@@ -69,6 +79,9 @@ export async function handleCommandInteraction(
         "sacar-guild",
         "confiscar-saldo",
         "remover-bot",
+        "lang",
+        "depositar-membro",
+        "arquivar-evento",
       ];
 
       if (adminCommands.includes(commandName)) {
@@ -107,10 +120,12 @@ export async function handleCommandInteraction(
         return;
       }
 
-      const isManager = await interaction?.guild?.roles.fetch(guildData?.eventManagerRoleID ?? "");
+      const managerRole = await interaction.guild?.roles.fetch(guildData?.eventManagerRoleID ?? "");
+      const isManager = managerRole && member?.roles.cache.has(managerRole.id); // Verifica se o membro tem a função de gerente
+      const isCreator = event.creatorId === interaction.user.id; // Verifica se é o criador do evento
 
       if (commandName === "vendedor") {
-        if (!isManager && !isAdmin) {
+        if (!isManager && !isCreator && !isAdmin) {
           return interaction.reply(t("index.sellerOnly"));
         }
 
@@ -118,13 +133,12 @@ export async function handleCommandInteraction(
           prisma,
           interaction,
           event,
+          guildData,
         });
         return;
       }
 
       if (!event.seller) {
-        console.log(language);
-
         await interaction.reply(
           t("index.noSeller", {
             commandName,

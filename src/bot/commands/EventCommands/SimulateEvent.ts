@@ -8,6 +8,10 @@ export async function SimulateEvent({ interaction, prisma, event, guildData }: S
   const language = guildData.language;
   const t = useT(language);
 
+  //pegar lingugagem do servidor
+  const discordLanguage = interaction.locale;
+  const b = useT(discordLanguage);
+
   try {
     const message = await interaction.channel?.messages.fetch(event?.messageID ?? "");
 
@@ -80,21 +84,6 @@ export async function SimulateEvent({ interaction, prisma, event, guildData }: S
     const valueFees = valueTaxaGuildRounded + valueTaxaSellerRounded;
     const totalValueWithFees = totalValueFormatted - valueFees;
 
-    //salvando no banco o valor total do evento tirando os descontos das taxas
-    const updateValueEvent = await prisma.event.update({
-      where: {
-        id: event?.id,
-      },
-      data: {
-        totalValue: totalValueWithFees,
-      },
-    });
-
-    if (!updateValueEvent) {
-      console.log("Erro ao atualizar o valor do evento", event?.eventName);
-      return await interaction.editReply(t("simulateEvent.errorUpdateEvent", { eventName: event?.eventName }));
-    }
-
     // Somar todas as porcentagens dos participantes
     const totalPercentage = participantsData.reduce((sum, p) => sum + p.percentage, 0);
 
@@ -151,13 +140,29 @@ export async function SimulateEvent({ interaction, prisma, event, guildData }: S
         },
         {
           name: t("simulateEvent.embed.nextSteps"),
-          value: t("simulateEvent.embed.nextStepsValue", {
+          value: b("simulateEvent.embed.nextStepsValue", {
             eventValue: totalValueFormatted.toLocaleString("en-US"),
           }),
         }
       );
 
-    await interaction.editReply({ embeds: [newEmbed] });
+    const sendMessage = await interaction.editReply({ embeds: [newEmbed] });
+
+    //salvando no banco o valor total do evento tirando os descontos das taxas
+    const updateValueEvent = await prisma.event.update({
+      where: {
+        id: event?.id,
+      },
+      data: {
+        totalValue: totalValueWithFees,
+        simulatedMessageID: sendMessage.id,
+      },
+    });
+
+    if (!updateValueEvent) {
+      console.log("Erro ao atualizar o valor do evento", event?.eventName);
+      return await interaction.editReply(t("simulateEvent.errorUpdateEvent", { eventName: event?.eventName }));
+    }
   } catch (error) {
     console.error("Error ao simular o evento", error);
     return await interaction.editReply(t("simulateEvent.catchError"));
