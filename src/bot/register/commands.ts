@@ -61,55 +61,55 @@ export const commands = [
           {
             name: "English",
             value: "en-US",
-          },
-          {
-            name: "Deutsch",
-            value: "de",
-          },
-          {
-            name: "Français",
-            value: "fr",
-          },
-          {
-            name: "Русский",
-            value: "ru",
-          },
-          {
-            name: "Polski",
-            value: "pl",
-          },
-          {
-            name: "Español",
-            value: "es-ES",
-          },
-          {
-            name: "Italiano",
-            value: "it",
-          },
-          {
-            name: "中文 (简体)",
-            value: "zh-CN",
-          },
-          {
-            name: "한국어",
-            value: "ko",
-          },
-          {
-            name: "日本語",
-            value: "ja",
-          },
-          {
-            name: "中文 (繁體)",
-            value: "zh-TW",
-          },
-          {
-            name: "Bahasa Indonesia",
-            value: "id",
-          },
-          {
-            name: "Türkçe",
-            value: "tr",
           }
+          // {
+          //   name: "Deutsch",
+          //   value: "de",
+          // },
+          // {
+          //   name: "Français",
+          //   value: "fr",
+          // },
+          // {
+          //   name: "Русский",
+          //   value: "ru",
+          // },
+          // {
+          //   name: "Polski",
+          //   value: "pl",
+          // },
+          // {
+          //   name: "Español",
+          //   value: "es-ES",
+          // },
+          // {
+          //   name: "Italiano",
+          //   value: "it",
+          // },
+          // {
+          //   name: "中文 (简体)",
+          //   value: "zh-CN",
+          // },
+          // {
+          //   name: "한국어",
+          //   value: "ko",
+          // },
+          // {
+          //   name: "日本語",
+          //   value: "ja",
+          // },
+          // {
+          //   name: "中文 (繁體)",
+          //   value: "zh-TW",
+          // },
+          // {
+          //   name: "Bahasa Indonesia",
+          //   value: "id",
+          // },
+          // {
+          //   name: "Türkçe",
+          //   value: "tr",
+          // }
         )
         .setRequired(true)
     )
@@ -935,55 +935,55 @@ export const commands = [
           {
             name: "English",
             value: "en-US",
-          },
-          {
-            name: "Deutsch",
-            value: "de",
-          },
-          {
-            name: "Français",
-            value: "fr",
-          },
-          {
-            name: "Русский",
-            value: "ru",
-          },
-          {
-            name: "Polski",
-            value: "pl",
-          },
-          {
-            name: "Español",
-            value: "es-ES",
-          },
-          {
-            name: "Italiano",
-            value: "it",
-          },
-          {
-            name: "中文 (简体)",
-            value: "zh-CN",
-          },
-          {
-            name: "한국어",
-            value: "ko",
-          },
-          {
-            name: "日本語",
-            value: "ja",
-          },
-          {
-            name: "中文 (繁體)",
-            value: "zh-TW",
-          },
-          {
-            name: "Bahasa Indonesia",
-            value: "id",
-          },
-          {
-            name: "Türkçe",
-            value: "tr",
           }
+          // {
+          //   name: "Deutsch",
+          //   value: "de",
+          // },
+          // {
+          //   name: "Français",
+          //   value: "fr",
+          // },
+          // {
+          //   name: "Русский",
+          //   value: "ru",
+          // },
+          // {
+          //   name: "Polski",
+          //   value: "pl",
+          // },
+          // {
+          //   name: "Español",
+          //   value: "es-ES",
+          // },
+          // {
+          //   name: "Italiano",
+          //   value: "it",
+          // },
+          // {
+          //   name: "中文 (简体)",
+          //   value: "zh-CN",
+          // },
+          // {
+          //   name: "한국어",
+          //   value: "ko",
+          // },
+          // {
+          //   name: "日本語",
+          //   value: "ja",
+          // },
+          // {
+          //   name: "中文 (繁體)",
+          //   value: "zh-TW",
+          // },
+          // {
+          //   name: "Bahasa Indonesia",
+          //   value: "id",
+          // },
+          // {
+          //   name: "Türkçe",
+          //   value: "tr",
+          // }
         )
         .setRequired(true)
     ),
@@ -1507,5 +1507,198 @@ export const commands = [
           { name: "Asia (East)", value: "east" },
           { name: "Europe", value: "europe" }
         )
+    ),
+  new SlashCommandBuilder()
+    .setName("depositar-membro")
+    .setNameLocalizations({
+      "en-US": "deposit-member",
+      de: "einzahlen-mitglied",
+      fr: "deposer-membre",
+      ru: "vnesite-uchastnik",
+      pl: "wplac-czlonek",
+      "es-ES": "depositar-miembro",
+      it: "deposito-membro",
+      "zh-CN": "存款成员",
+      ko: "gu-seong-won-deposit",
+      ja: "zandaka-itiran",
+      "zh-TW": "存款成員",
+      id: "setor-anggota",
+      tr: "uye-yatırmak",
+    })
+    .setDescription("Deposita um valor no saldo de um membro")
+    .setDescriptionLocalizations({
+      "en-US": "Deposit an amount in a member's balance",
+      de: "Einzahlen eines Betrags auf das Guthaben eines Mitglieds",
+      fr: "Déposer un montant sur le solde d'un membre",
+      ru: "Vnesite summu na balans uchastnika",
+      pl: "Wpłać kwotę na saldo członka",
+      "es-ES": "Depositar un monto en el saldo de un miembro",
+      it: "Deposita un importo nel saldo di un membro",
+      "zh-CN": "在成员的余额中存入金额",
+      ko: "구성원의 잔액에 금액을 입금합니다.",
+      ja: "メンバーの残高に金額を預ける",
+      "zh-TW": "在成員的餘額中存入金額",
+      id: "Setor jumlah ke saldo anggota",
+      tr: "Bir üyenin bakiyesine bir miktar yatırın",
+    })
+    .addUserOption((option) =>
+      option
+        .setName("membro")
+        .setNameLocalizations({
+          "en-US": "member",
+          de: "mitglied",
+          fr: "membre",
+          ru: "uchastnik",
+          pl: "czlonek",
+          "es-ES": "miembro",
+          it: "membro",
+          "zh-CN": "chengyuan",
+          ko: "gu-seong-won",
+          ja: "zandaka",
+          "zh-TW": "chengyuan",
+          id: "anggota",
+          tr: "uye",
+        })
+        .setDescription("Membro que irá receber o valor no saldo, ex: @membro")
+        .setDescriptionLocalizations({
+          "en-US": "Member who will receive the amount in the balance, ex: @member",
+          de: "Mitglied, das den Betrag auf dem Guthaben erhält, z. B.: @Mitglied",
+          fr: "Membre qui recevra le montant dans le solde, ex : @membre",
+          ru: "Uchastnik, kotoryi poluchit summu na balanse, naprimer: @uchastnik",
+          pl: "Członek, który otrzyma kwotę na saldzie, np.: @członek",
+          "es-ES": "Miembro que recibirá el monto en el saldo, ej: @miembro",
+          it: "Membro che riceverà l'importo nel saldo, es: @membro",
+          "zh-CN": "将收到余额金额的成员，例如：@成员",
+          ko: "@구성원과 같은 구성원이 잔액을 받습니다.",
+          ja: "@メンバーのように残高を受け取るメンバー",
+          "zh-TW": "@成員將收到餘額金額，例如：@成員",
+          id: "Anggota yang akan menerima jumlah di saldo misalnya: @anggota",
+          tr: "Bakiyede miktarı alacak üye örneğin: @üye",
+        })
+        .setRequired(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("valor")
+        .setNameLocalizations({
+          "en-US": "value",
+          de: "wert",
+          fr: "valeur",
+          ru: "znachenie",
+          pl: "wartosc",
+          "es-ES": "valor",
+          it: "valore",
+          "zh-CN": "价值",
+          ko: "가치",
+          ja: "価値",
+          "zh-TW": "價值",
+          id: "nilai",
+          tr: "deger",
+        })
+        .setDescription("Valor a ser depositado no saldo de um membro, ex: 1,000,000")
+        .setDescriptionLocalizations({
+          "en-US": "Value to be deposited into the guild balance, ex: 1,000,000",
+          de: "Betrag, der auf das Gildenguthaben eingezahlt werden soll, z. B.: 1.000.000",
+          fr: "Montant à déposer dans le solde de la guilde, ex : 1 000 000",
+          ru: "Сумма, которую необходимо внести на баланс гильдии, например: 1 000 000",
+          pl: "Kwota do wpłaty na saldo gildii, np.: 1 000 000",
+          "es-ES": "Valor a depositar en el saldo de la guild, ej: 1,000,000",
+          it: "Importo da depositare nel saldo della gilda, es: 1.000.000",
+          "zh-CN": "要存入公会余额的金额，例如：1,000,000",
+          ko: "길드 잔액에 입금할 금액 예: 1,000,000",
+          ja: "ギルドの残高に預ける金額、例：1,000,000",
+          "zh-TW": "要存入公會餘額的金額，例如：1,000,000",
+          id: "Jumlah yang akan disetorkan ke guild misalnya: 1.000.000",
+          tr: "Gildin bakiyesine yatırılacak miktar örneğin: 1.000.000",
+        })
+        .setRequired(true)
+    ),
+  new SlashCommandBuilder()
+    .setName("arquivar-evento")
+    .setNameLocalizations({
+      "en-US": "archive-event",
+      de: "archivieren-event",
+      fr: "archiver-evenement",
+      ru: "arkhivirovat-sobytiye",
+      pl: "archiwizowac-wydarzenie",
+      "es-ES": "archivar-evento",
+      it: "archiviare-evento",
+      "zh-CN": "归档事件",
+      ko: "gu-seong-won-ji-geum",
+      ja: "zandaka-itiran",
+      "zh-TW": "gu-seong-won-ji-geum",
+      id: "arsipkan-acara",
+      tr: "etkinlik-arsivle",
+    })
+    .setDescription("Arquivar o evento atual no canal #financeiro e exclui o canal do evento")
+    .setDescriptionLocalizations({
+      "en-US": "Archive the event in the #financeiro channel and delete the event channel",
+      de: "Archivieren Sie das Ereignis im Kanal #financeiro und löschen Sie den Ereigniskanal",
+      fr: "Archiver l'événement dans le canal #financeiro et supprimer le canal de l'événement",
+      ru: "Arkhivirovat-sobytiye-v-kanale-finansovom-i-udalit-kanal-sobytiya",
+      pl: "Zarchiwizuj wydarzenie w kanale finansowym i usuń kanał wydarzenia",
+      "es-ES": "Archivar el evento en el canal #financiero y eliminar el canal del evento",
+      it: "Archivia l'evento nel canale #finanziario ed elimina il canale dell'evento",
+      "zh-CN": "在#financeiro频道中归档事件并删除事件频道",
+      ko: "#재무 채널에서 이벤트를 아카이브하고 이벤트 채널을 삭제합니다.",
+      ja: "#財務チャンネルでイベントをアーカイブし、イベントチャンネルを削除します。",
+      "zh-TW": "#財務頻道中歸檔事件並刪除事件頻道",
+      id: "Arsipkan acara di saluran #keuangan dan hapus saluran acara",
+      tr: "#finans kanalında etkinliği arşivleyin ve etkinlik kanalını silin",
+    }),
+  new SlashCommandBuilder()
+    .setName("price-lang")
+    .setDescription("Alterar a linguagem do bot de preços do mercado")
+    .setDescriptionLocalizations({
+      "en-US": "Change the language of the market price bot",
+      de: "Ändern Sie die Sprache des Marktpreis-Bots",
+      fr: "Changer la langue du bot de prix du marché",
+      ru: "Izmenit-yazyk-bota-rynka-tsen",
+      pl: "Zmień język bota cen rynkowych",
+      "es-ES": "Cambiar el idioma del bot de precios del mercado",
+      it: "Cambia la lingua del bot dei prezzi di mercato",
+      "zh-CN": "更改市场价格机器人的语言",
+      ko: "시장 가격 봇의 언어를 변경합니다.",
+      ja: "市場価格ボットの言語を変更する",
+      "zh-TW": "更改市場價格機器人的語言",
+      id: "Ubah bahasa bot harga pasar",
+      tr: "Pazar fiyatı botunun dilini değiştirin",
+    })
+    .addStringOption((option) =>
+      option
+        .setName("idioma")
+        .setNameLocalizations({
+          "en-US": "language",
+          de: "sprache",
+          fr: "langue",
+          ru: "yazyk",
+          pl: "jezyk",
+          "es-ES": "idioma",
+          it: "lingua",
+          "zh-CN": "yuyan",
+          ko: "eon-eo",
+          ja: "gengo",
+          "zh-TW": "yuyan",
+          id: "bahasa",
+          tr: "dil",
+        })
+        .setDescription("Idioma que deseja alterar")
+        .setDescriptionLocalizations({
+          "en-US": "Language you want to change",
+          de: "Sprache, die Sie ändern möchten",
+          fr: "Langue que vous souhaitez changer",
+          ru: "Yazyk, kotoryi vy khotite izmenit'",
+          pl: "Język, który chcesz zmienić",
+          "es-ES": "Idioma que desea cambiar",
+          it: "Lingua che desideri cambiare",
+          "zh-CN": "您想更改的语言",
+          ko: "변경할 언어",
+          ja: "変更したい言語",
+          "zh-TW": "您想更改的語言",
+          id: "Bahasa yang ingin Anda ubah",
+          tr: "Değiştirmek istediğiniz dil",
+        })
+        .setRequired(true)
+        .setChoices({ name: "Português", value: "pt-BR" }, { name: "English", value: "en-US" })
     ),
 ];
