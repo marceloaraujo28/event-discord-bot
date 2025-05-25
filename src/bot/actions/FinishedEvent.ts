@@ -70,7 +70,16 @@ export async function FinishedEvent({
 
     const channelName = eventChannel.name;
 
-    await eventChannel?.delete();
+    if (event.channelID) {
+      try {
+        const channel = await message.guild?.channels.fetch(event.channelID);
+        if (channel) {
+          await channel.delete().catch((err) => console.warn(`Erro ao deletar canal:`, err));
+        }
+      } catch (err) {
+        console.warn(`Canal não encontrado ou já deletado:`, err);
+      }
+    }
 
     const eventTextChannel = await message?.guild?.channels.create({
       name: channelName,

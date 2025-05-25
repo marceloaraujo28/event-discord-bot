@@ -139,6 +139,13 @@ export async function VoiceUpdate({ newState, oldState, prisma, guildData }: Voi
     updatedEmbed.setDescription(embed.description);
     updatedEmbed.setColor(embed.color);
 
+    if (!message.editable) {
+      console.error(
+        `A mensagem ${event.messageID} não está mais editável (pode ter sido deletada ou o bot não tem permissão).`
+      );
+      return;
+    }
+
     await message.edit({ embeds: [updatedEmbed] });
   } catch (error) {
     console.error(`Erro ao atualizar o evento ou remover usuário no banco de dados ${userTag}`, error);
