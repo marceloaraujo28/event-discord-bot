@@ -1,5 +1,7 @@
 import { useT } from "../utils/useT";
+import { ArchiveEvent } from "./AdminCommands/ArchiveEvent";
 import { ConfiscateBalance } from "./AdminCommands/ConfiscateBalance";
+import { DepositMember } from "./AdminCommands/DepositMember";
 import { GuildDeposit } from "./AdminCommands/GuildDeposit";
 import { PayMember } from "./AdminCommands/PayMember";
 import { RemoveBot } from "./AdminCommands/RemoveBot";
@@ -112,6 +114,26 @@ export async function Admin({ commandName, interaction, prisma }: AdminType) {
       prisma,
       guildData,
     });
+    return true;
+  }
+
+  if (commandName === "depositar-membro") {
+    await DepositMember({
+      interaction,
+      prisma,
+      guildData,
+    });
+
+    return true;
+  }
+
+  if (commandName === "arquivar-evento") {
+    await ArchiveEvent({
+      guildData,
+      interaction,
+      prisma,
+    });
+
     return true;
   }
 }
