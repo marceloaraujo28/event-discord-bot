@@ -65,10 +65,7 @@ export async function EventDeposit({ interaction, prisma, event, guildData }: Ev
 
     const valueDistribuidoRounded = Math.round(valueDistribuido);
 
-    //depositValueFormatted.toLocaleString("en-US")
-    //event.eventName
     // Enviar a mensagem de confirmação no canal financeiro
-    //valueDistribuidoRounded.toLocaleString("en-US")
     const confirmationMessage = await financeChannel.send({
       embeds: [
         new EmbedBuilder()
@@ -95,10 +92,11 @@ export async function EventDeposit({ interaction, prisma, event, guildData }: Ev
       where: { id: event.id },
       data: {
         confirmationMessageID: confirmationMessage.id,
+        totalValue: valueDistribuidoRounded,
       },
     });
 
-    await interaction.editReply(t("eventDeposit.embed.successOrder", { financeChannelId }));
+    return await interaction.editReply(t("eventDeposit.embed.successOrder", { financeChannelId }));
   } catch (error) {
     console.error("Error ao fazer pedido de depósito");
     return await interaction.editReply(t("eventDeposit.embed.catchError"));
