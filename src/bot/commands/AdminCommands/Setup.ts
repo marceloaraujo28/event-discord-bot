@@ -24,6 +24,17 @@ export async function Setup({ interaction, prisma }: SetupType) {
       name: t("setup.categoryCreateEvent"),
       type: ChannelType.GuildText,
       parent: category?.id,
+      permissionOverwrites: [
+        {
+          id: guild.id,
+          allow: ["ViewChannel"],
+          deny: ["SendMessages"],
+        },
+        {
+          id: interaction.client.user.id, // ID do bot
+          allow: ["ViewChannel", "SendMessages", "EmbedLinks"],
+        },
+      ],
     });
 
     //criar embed na sala de criar eventos
@@ -62,17 +73,6 @@ export async function Setup({ interaction, prisma }: SetupType) {
 
     embed.setColor("Orange");
 
-    //!------------->EMBED QUANDO NÃO TIVER PAGO<------------!
-    // embed.setTitle("Ativar Albion Event Organizer");
-    // embed.setDescription(
-    //   "Para renovar sua assinatura e ativar o Albion Event Organizer, acesse o link abaixo:"
-    // );
-    // embed.setFields({
-    //   name: "Link",
-    //   value: "http://google.com.br",
-    // });
-    // embed.setColor("Red");
-
     const createEventButton = new ButtonBuilder()
       .setCustomId("create_event")
       .setLabel(t("setup.createEventButton"))
@@ -80,7 +80,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
 
     const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(createEventButton);
 
-    await newEvent?.send({ embeds: [embed], components: [buttonRow] });
+    const newEventEmbed = await newEvent?.send({ embeds: [embed], components: [buttonRow] });
 
     //criar a sala para participar dos eventos
     const participationEvent = await guild?.channels.create({
@@ -195,6 +195,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
         },
         update: {
           newEventChannelID: newEvent?.id,
+          newEventMessageID: newEventEmbed?.id,
           participationChannelID: participationEvent?.id,
           logsChannelID: logsChannel?.id,
           financialChannelID: financialChannel.id,
@@ -210,6 +211,7 @@ export async function Setup({ interaction, prisma }: SetupType) {
         create: {
           guildID: interaction.guildId,
           newEventChannelID: newEvent?.id,
+          newEventMessageID: newEventEmbed?.id,
           participationChannelID: participationEvent?.id,
           logsChannelID: logsChannel?.id,
           language: language,
@@ -224,30 +226,28 @@ export async function Setup({ interaction, prisma }: SetupType) {
         },
       });
 
-      await interaction.user.send({
-        embeds: [
-          new EmbedBuilder()
-            .setTitle(t("setup.welcomeEmbed.title"))
-            .setDescription(t("setup.welcomeEmbed.description"))
-            .addFields(
-              {
-                name: t("setup.welcomeEmbed.field1name"),
-                value: t("setup.welcomeEmbed.field1value"),
-              },
-              {
-                name: t("setup.welcomeEmbed.field2name"),
-                value: t("setup.welcomeEmbed.field2value"),
-              },
-              {
-                name: t("setup.welcomeEmbed.field3name"),
-                value: t("setup.welcomeEmbed.field3value", { discordLink: "https://discord.gg/AjGZbc5b2s" }),
-              }
-            )
-            .setColor("Green"),
-        ],
-      });
+      const newEmbed = new EmbedBuilder()
+        .setTitle(t("setup.setupSuccessEmbed.title"))
+        .setDescription(t("setup.setupSuccessEmbed.description"))
+        .addFields(
+          {
+            name: t("setup.setupSuccessEmbed.field1name"),
+            value: t("setup.setupSuccessEmbed.field1value"),
+          },
+          {
+            name: t("setup.setupSuccessEmbed.field2name"),
+            value: t("setup.setupSuccessEmbed.field2value"),
+          },
+          {
+            name: t("setup.welcomeEmbed.field3name"),
+            value: t("setup.welcomeEmbed.field3value", { discordLink: "https://discord.gg/AjGZbc5b2s" }),
+          }
+        )
+        .setColor("Green");
 
-      return await interaction.editReply(t("setup.setupFinished"));
+      return await interaction.editReply({
+        embeds: [newEmbed],
+      });
     } else {
       return await interaction.editReply(t("setup.setupError"));
     }
