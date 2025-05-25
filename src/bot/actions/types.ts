@@ -24,7 +24,6 @@ export type EventBaseType = {
 export type ParticipateEventType = EventBaseType & { guildData: Guilds };
 
 export type StartEventType = {
-  creatorName?: string | null;
   guildData: Guilds;
 } & EventBaseType;
 
@@ -35,7 +34,4 @@ export type VoiceUpdateType = {
   guildData: Guilds;
 } & Pick<EventBaseType, "prisma">;
 
-export type DeleteEventType = { creatorName?: string | null; guildData: Guilds } & Omit<
-  EventBaseType,
-  "eventNumber" | "embed"
->;
+export type DeleteEventType = { guildData: Guilds } & Omit<EventBaseType, "eventNumber" | "embed">;

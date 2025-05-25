@@ -1,16 +1,17 @@
 require("dotenv").config();
 
 import {
+  ChannelType,
   Client,
   EmbedBuilder,
   GatewayIntentBits,
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
+  PermissionFlagsBits,
   PermissionsBitField,
   User,
 } from "discord.js";
-import { OpenEvent } from "./commands/OpenEvent";
 import { ParticipateEvent } from "./actions/ParticipateEvent";
 import { StartEvent } from "./actions/StartEvent";
 
@@ -49,6 +50,71 @@ client.once("ready", async () => {
   await initI18n();
 
   console.log(`Bot online como ${client.user?.tag}`);
+});
+
+client.on("guildCreate", async (guild) => {
+  try {
+    // Buscar idioma padrão (exemplo: pt), ou defina como fallback
+    const language = "en-US";
+    const t = useT(language);
+
+    // Buscar o dono do servidor
+    const owner = await guild.fetchOwner();
+
+    // Criar o embed
+    const embedChannel = new EmbedBuilder()
+      .setTitle(t("setup.welcomeEmbed.title"))
+      .setDescription(t("setup.welcomeEmbed.description"))
+      .addFields(
+        {
+          name: t("setup.welcomeEmbed.field1name"),
+          value: t("setup.welcomeEmbed.field1value"),
+        },
+        {
+          name: t("setup.welcomeEmbed.field3name"),
+          value: t("setup.welcomeEmbed.field3value", { discordLink: "https://discord.gg/AjGZbc5b2s" }),
+        }
+      )
+      .setColor("DarkOrange")
+      .setThumbnail("https://cdn.discordapp.com/avatars/1272188978765893714/dadee0975ad1b9c9cf65c51290dabaa6.png");
+
+    const adminEmbed = new EmbedBuilder()
+      .setTitle("Thank you for using Albion Event Bot on your server!")
+      .setDescription(
+        "Our main goal is to simplify loot split management and help you track market prices in Albion Online.\nMake sure the bot has the necessary **permissions** to ensure full functionality."
+      )
+      .setFields(
+        {
+          name: "Join our Discord to ask questions or share suggestions",
+          value: "[Albion Event Bot Discord](https://discord.gg/AjGZbc5b2s)",
+        },
+        {
+          name: "See all bot features using the command:",
+          value: "`/help`",
+        }
+      )
+      .setFooter({
+        text: "Have fun and make the most out of the Albion Event Bot.",
+      })
+      .setTimestamp()
+      .setColor("DarkOrange")
+      .setThumbnail("https://cdn.discordapp.com/avatars/1272188978765893714/dadee0975ad1b9c9cf65c51290dabaa6.png");
+
+    // Tentar enviar uma DM para o dono do servidor
+    await owner.send({ embeds: [adminEmbed] });
+
+    // Achar o primeiro canal de texto onde o bot pode enviar mensagens
+    const channel = guild.channels.cache.find(
+      (c) =>
+        c.type === ChannelType.GuildText && c.permissionsFor(guild.members.me!)?.has(PermissionFlagsBits.SendMessages)
+    );
+
+    if (channel?.isTextBased()) {
+      await channel.send({ embeds: [embedChannel] });
+    }
+  } catch (error) {
+    console.error("Erro ao enviar embed no guildCreate:", error);
+  }
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -126,7 +192,7 @@ client.on(
       const channel = reaction.message.channel;
       if ("send" in channel && typeof channel.send === "function") {
         try {
-          const msg = await channel.send(t("index.waitSendMessage", user));
+          const msg = await channel.send(t("index.waitSendMessage", { user }));
           setTimeout(() => msg.delete().catch(() => {}), 3000);
         } catch (err) {
           console.warn("Erro ao enviar mensagem de cooldown:", err);
@@ -149,12 +215,13 @@ client.on(
     // Obtém o membro e verifica se ele tem o cargo de admin
     const member = await message.guild?.members.fetch(user.id);
     const isAdmin = member?.permissions.has(PermissionsBitField.Flags.Administrator);
-    const isManager = await member?.guild.roles.fetch(guildData?.eventManagerRoleID ?? "");
+    const managerRole = await member?.guild.roles.fetch(guildData?.eventManagerRoleID ?? "");
+    const isManager = managerRole && member?.roles.cache.has(managerRole.id);
 
     //reações do canal financeiro
     if (channelID === financeChannelID) {
-      if (reaction.emoji.name === "✅") {
-        await reaction.users.remove(user.id);
+      await reaction.users.remove(user.id);
+      if (reaction.emoji.name === "✅" && isAdmin) {
         const footerText = embed.footer?.text;
 
         // Extrair o nome do evento
@@ -243,6 +310,7 @@ client.on(
                   t("index.confirmedDepositEmbed.description", {
                     userId: user.id,
                     totalValue: totalValue.toLocaleString("en-US"),
+                    eventName: event.eventName,
                   })
                 )
                 .setColor("Green");
@@ -259,14 +327,17 @@ client.on(
 
     //reações de gerenciamento do evento
     if (channelID === participationChannelID) {
-      const creatorNameMatch = embed.title?.match(/Criado por ([^-]+)/);
-      const creatorName = creatorNameMatch ? creatorNameMatch[1].trim() : null;
-
       const eventNumberMatch = embed.title?.match(/^Event (\d+)\b/);
       const eventNumber = eventNumberMatch?.[1] || "";
       const keyTitle = `Event ${eventNumber}`;
 
-      const eventCreator = creatorName === user.username;
+      const event = await prisma.event.findFirst({
+        where: {
+          eventName: keyTitle,
+        },
+      });
+
+      const eventCreator = event?.creatorId === user.id;
 
       //função para participar do evento
       if (reaction.emoji.name === "🚀") {
@@ -294,7 +365,6 @@ client.on(
         await StartEvent({
           user,
           reaction,
-          creatorName,
           message,
           embed,
           prisma,
@@ -329,7 +399,6 @@ client.on(
           prisma,
           reaction,
           user,
-          creatorName,
           guildData,
         });
 
