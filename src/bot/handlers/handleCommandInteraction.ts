@@ -14,6 +14,14 @@ export async function handleCommandInteraction(
   interaction: CommandInteraction<CacheType>,
   prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 ) {
+  if (!interaction.inGuild()) {
+    await interaction.reply({
+      content: "Este comando só pode ser usado em servidores.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   const member = await interaction?.guild?.members.fetch(interaction.user.id);
   const isAdmin = member?.permissions.has(PermissionsBitField.Flags.Administrator);
   const { commandName } = interaction;

@@ -170,7 +170,7 @@ client.on(
     }
 
     if (message.author?.id !== client.user?.id) return;
-
+    if (!message.guild) return;
 
     const guildData = await prisma.guilds.findUnique({
       where: {
@@ -432,7 +432,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   });
 
   if (!guildData) {
-    return console.log("Guild não encontrada, servidor", oldState.guild.name);
+    return;
   }
 
   const event = await prisma.event.findFirst({

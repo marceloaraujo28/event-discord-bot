@@ -8,6 +8,14 @@ export async function handleButtonInteraction(
   interaction: ButtonInteraction<CacheType>,
   prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 ) {
+  if (!interaction.inGuild()) {
+    await interaction.reply({
+      content: "Este comando só pode ser usado em servidores.",
+      ephemeral: true,
+    });
+    return;
+  }
+
   if (!interaction.guild) return; // Garante que estamos em um servidor
   //aqui tambem fazer verificação quando o cargo de criar de eventos for criado
 
