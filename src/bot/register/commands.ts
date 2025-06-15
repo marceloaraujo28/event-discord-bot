@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { InteractionContextType, SlashCommandBuilder } from "discord.js";
 
 export const commands = [
   new SlashCommandBuilder()
@@ -113,6 +113,7 @@ export const commands = [
         )
         .setRequired(true)
     )
+    .setContexts([InteractionContextType.Guild])
     .toJSON(),
   new SlashCommandBuilder()
     .setName("vendedor")
@@ -182,7 +183,8 @@ export const commands = [
           tr: "@üye gibi bir üyeyi seçin",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("simular-evento")
     .setNameLocalizations({
@@ -252,7 +254,8 @@ export const commands = [
           tr: "Etkinlikte toplanan miktarı girin örneğin: 1.000.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("atualizar-participacao")
     .setNameLocalizations({
@@ -359,7 +362,8 @@ export const commands = [
         })
         .setRequired(true)
         .setMaxValue(100)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("atualizar-taxa-vendedor")
     .setNameLocalizations({
@@ -429,7 +433,8 @@ export const commands = [
         })
         .setMaxValue(100)
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("atualizar-taxa-guild")
     .setNameLocalizations({
@@ -499,7 +504,8 @@ export const commands = [
         })
         .setMaxValue(100)
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("depositar-evento")
     .setNameLocalizations({
@@ -568,7 +574,8 @@ export const commands = [
           tr: "Yatırılacak miktar örneğin: 1.000.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("meu-saldo")
     .setNameLocalizations({
@@ -601,7 +608,8 @@ export const commands = [
       "zh-TW": "檢查您當前的餘額",
       id: "Periksa saldo Anda saat ini",
       tr: "Mevcut bakiyenizi kontrol edin",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("saldos")
     .setNameLocalizations({
@@ -634,7 +642,8 @@ export const commands = [
       "zh-TW": "檢查所有成員的餘額",
       id: "Periksa saldo semua anggota",
       tr: "Tüm üyelerin bakiyesini kontrol edin",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("saldo-membro")
     .setNameLocalizations({
@@ -703,7 +712,8 @@ export const commands = [
           tr: "@üye gibi üyenin adını girin",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("saldo-guild")
     .setNameLocalizations({
@@ -736,7 +746,8 @@ export const commands = [
       "zh-TW": "檢查公會當前的餘額",
       id: "Periksa saldo guild saat ini",
       tr: "Gildin mevcut bakiyesini kontrol edin",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("depositar-guild")
     .setNameLocalizations({
@@ -805,7 +816,8 @@ export const commands = [
           tr: "Gildin bakiyesine yatırılacak miktar örneğin: 1.000.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("sacar-guild")
     .setNameLocalizations({
@@ -874,7 +886,8 @@ export const commands = [
           tr: "Gildin bakiyesinden çekilecek miktar örneğin: 1.000.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("lang")
     .setDescription("Alterar o idioma do bot")
@@ -986,7 +999,8 @@ export const commands = [
           // }
         )
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("pagar-membro")
     .setNameLocalizations({
@@ -1091,7 +1105,8 @@ export const commands = [
           tr: "Üyeye ödenecek miktar örneğin: 100.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("confiscar-saldo")
     .setNameLocalizations({
@@ -1160,7 +1175,8 @@ export const commands = [
           tr: "Bakiyesi el konulacak üye",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("transferir-saldo")
     .setNameLocalizations({
@@ -1265,7 +1281,8 @@ export const commands = [
           tr: "Aktarılacak miktar",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("help")
     .setDescription("Para ver comandos disponíveis e entender os fluxos!")
@@ -1283,7 +1300,8 @@ export const commands = [
       "zh-TW": "查看可用命令並了解流程！",
       id: "Untuk melihat perintah yang tersedia dan memahami alur!",
       tr: "Mevcut komutları görmek ve akışları anlamak için!",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("remover-bot")
     .setNameLocalizations({
@@ -1318,7 +1336,8 @@ export const commands = [
       "zh-TW": "刪除機器人創建的所有房間和頻道",
       id: "Hapus semua ruang dan saluran yang dibuat oleh bot",
       tr: "Bot tarafından oluşturulan tüm odaları ve kanalları kaldırın",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("preco")
     .setNameLocalizations({
@@ -1507,7 +1526,8 @@ export const commands = [
           { name: "Asia (East)", value: "east" },
           { name: "Europe", value: "europe" }
         )
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("depositar-membro")
     .setNameLocalizations({
@@ -1612,7 +1632,8 @@ export const commands = [
           tr: "Gildin bakiyesine yatırılacak miktar örneğin: 1.000.000",
         })
         .setRequired(true)
-    ),
+    )
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("arquivar-evento")
     .setNameLocalizations({
@@ -1645,7 +1666,8 @@ export const commands = [
       "zh-TW": "#財務頻道中歸檔事件並刪除事件頻道",
       id: "Arsipkan acara di saluran #keuangan dan hapus saluran acara",
       tr: "#finans kanalında etkinliği arşivleyin ve etkinlik kanalını silin",
-    }),
+    })
+    .setContexts([InteractionContextType.Guild]),
   new SlashCommandBuilder()
     .setName("price-lang")
     .setDescription("Alterar a linguagem do bot de preços do mercado")
@@ -1700,5 +1722,6 @@ export const commands = [
         })
         .setRequired(true)
         .setChoices({ name: "Português", value: "pt-BR" }, { name: "English", value: "en-US" })
-    ),
+    )
+    .setContexts([0]),
 ];
