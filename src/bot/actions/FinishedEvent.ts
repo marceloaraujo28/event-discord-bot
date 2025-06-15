@@ -26,8 +26,8 @@ export async function FinishedEvent({
       },
     });
 
-    if (!event) {
-      return console.error("Evento não existe!");
+    if (!event || event.status === "finished") {
+      return console.error("Evento não existe ou ja finalizado");
     }
 
     //atualizar o id, messageId e status do eventChannel
@@ -219,8 +219,13 @@ export async function FinishedEvent({
       },
     });
 
-    await message.delete();
+    try {
+      const fetchedMessage = await message.channel.messages.fetch(message.id);
+      return await fetchedMessage.delete();
+    } catch (err) {
+      return console.warn(`Não foi possível deletar a mensagem (ID: ${message.id}):`, err);
+    }
   } catch (error) {
-    console.error(`${user.username}, Erro ao finalizar o ${keyTitle}`, error);
+    return console.error(`${user.username}, Erro ao finalizar o ${keyTitle}`, error);
   }
 }

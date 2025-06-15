@@ -60,7 +60,12 @@ export async function DeleteEvent({ keyTitle, message, prisma, reaction, user, g
       guild: reaction.message?.guild,
     });
 
-    await message.delete();
+    try {
+      const fetchedMessage = await message.channel.messages.fetch(message.id);
+      return await fetchedMessage.delete();
+    } catch (err) {
+      return console.warn(`Não foi possível deletar a mensagem (ID: ${message.id}):`, err);
+    }
   } catch (error) {
     console.error(`Erro ao deletar o evento ${keyTitle}`);
     return;
